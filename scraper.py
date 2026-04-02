@@ -21,6 +21,21 @@ from bs4 import BeautifulSoup
 
 # ── Pokemon TCG sets to track ────────────────────────────────────────────────
 
+# ── Singles / Promos ──
+SINGLES = [
+    {"name": "EB Games Promos", "code": "PROMO", "product": "Gengar 050/088",
+     "query": "gengar 050 088 eb games promo stamped sealed",
+     "title_must_any": ["gengar"],
+     "title_must": ["050", "eb games"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean"]},
+
+    {"name": "Journey Together", "code": "JT", "product": "Lillie's Clefairy ex 184/159 SIR PSA 10",
+     "query": "lillie's clefairy ex 184 159 journey together psa 10",
+     "title_must_any": ["lillie", "clefairy"],
+     "title_must": ["184", "psa 10"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean", "psa 9", "psa 8", "psa 7", "cgc", "bgs"]},
+]
+
 # Cross-set exclusions: each set must exclude the other set names from titles
 _OTHER_SETS = {
     "ME01": ["phantasmal flames", "ascended heroes", "perfect order", "chaos rising"],
@@ -466,7 +481,7 @@ def _scrape_mode(session: requests.Session, sold: bool) -> tuple[list[dict], dic
     results = []
     all_sales: dict[str, list[dict]] = {}
 
-    for i, set_info in enumerate(SETS):
+    for i, set_info in enumerate(SETS + SINGLES):
         stats, listings = scrape_set(session, set_info, sold=sold)
         if stats:
             results.append(stats)

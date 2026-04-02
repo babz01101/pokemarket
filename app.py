@@ -13,7 +13,7 @@ import plotly.graph_objects as go
 from pathlib import Path
 import json
 
-from scraper import run as run_scraper, SETS
+from scraper import run as run_scraper, SETS, SINGLES
 from datetime import datetime
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -25,9 +25,12 @@ SET_META = {
     "ME02":  {"name": "Phantasmal Flames", "released": "Nov 2025", "color": "#ff6b35"},
     "ME2.5": {"name": "Ascended Heroes",   "released": "Jan 2026", "color": "#7b68ee"},
     "ME03":  {"name": "Perfect Order",     "released": "Mar 2026", "color": "#00c9a7"},
+    "PROMO": {"name": "EB Games Promos",   "released": "2026",     "color": "#e040fb"},
+    "JT":    {"name": "Journey Together",  "released": "Mar 2025", "color": "#f06292"},
 }
 
-PRODUCT_TYPES = sorted(set(s["product"] for s in SETS))
+ALL_ITEMS = SETS + SINGLES
+PRODUCT_TYPES = sorted(set(s["product"] for s in ALL_ITEMS))
 SET_CODES = list(SET_META.keys())
 
 # ── Page config ──────────────────────────────────────────────────────────────
@@ -305,7 +308,7 @@ with st.sidebar:
 
 # Build selected product labels from set + type filters
 selected = []
-for s in SETS:
+for s in ALL_ITEMS:
     label = f"{s['code']} {s['product']}"
     if s['code'] in (selected_sets or []) and s['product'] in (selected_types or []):
         selected.append(label)
