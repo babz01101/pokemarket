@@ -14,6 +14,7 @@ from pathlib import Path
 import json
 
 from scraper import run as run_scraper, SETS
+from datetime import datetime
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -139,25 +140,111 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
 
-    /* Chip / pill filters */
-    div[data-testid="stMultiSelect"] span[data-baseweb="tag"] {
-        border-radius: 20px;
+    /* Sticky filter bar class — applied via JS to the header+filters container */
+    .sticky-filter-bar {
+        position: sticky !important;
+        top: 0px !important;
+        z-index: 999 !important;
+        background: #0e1117 !important;
+        padding-bottom: 0.5rem !important;
+        border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+    }
+
+    /* Style the st.pills widget */
+    div[data-testid="stPills"] button {
+        border-radius: 20px !important;
+        font-size: 0.82rem !important;
+        padding: 0.3rem 0.9rem !important;
+        font-weight: 500 !important;
+        transition: all 0.15s ease !important;
+    }
+    div[data-testid="stSegmentedControl"] button {
+        border-radius: 10px !important;
+        font-size: 0.82rem !important;
+        font-weight: 500 !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Header ───────────────────────────────────────────────────────────────────
+# ── Helpers: last-updated timestamp ──────────────────────────────────────────
 
-st.markdown("""
-<div class="header-container">
-    <div>
-        <p class="header-title">PokeMarket</p>
-        <p class="header-subtitle">Mega Evolution Sealed Product Tracker &mdash; eBay Australia &mdash; Buy the Dip</p>
+def _get_last_updated() -> str:
+    """Return the most recent modification time across data files."""
+    candidates = [
+        DATA_DIR / "prices_sold.csv",
+        DATA_DIR / "prices_active.csv",
+    ]
+    latest = None
+    for p in candidates:
+        if p.exists():
+            mtime = p.stat().st_mtime
+            if latest is None or mtime > latest:
+                latest = mtime
+    if latest:
+        dt = datetime.fromtimestamp(latest)
+        return dt.strftime("%-d %b %Y at %-I:%M %p")
+    return "Never"
+
+# ── Header + Filters (sticky container) ──────────────────────────────────────
+
+_last_updated = _get_last_updated()
+set_options = {c: f"{c} — {SET_META[c]['name']}" for c in SET_CODES}
+
+with st.container():
+    st.markdown(f"""
+    <div class="header-container">
+        <div>
+            <p class="header-title">PokeMarket</p>
+            <p class="header-subtitle">Mega Evolution Sealed Product Tracker &mdash; eBay Australia &mdash; Buy the Dip</p>
+            <p style="color:#666; font-size:0.75rem; margin:0.2rem 0 0 0;">Last updated: {_last_updated}</p>
+        </div>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# ── Sidebar ──────────────────────────────────────────────────────────────────
+    selected_sets = st.pills(
+        "Sets",
+        options=SET_CODES,
+        default=SET_CODES,
+        selection_mode="multi",
+        format_func=lambda c: set_options[c],
+    )
+
+    selected_types = st.pills(
+        "Products",
+        options=PRODUCT_TYPES,
+        default=PRODUCT_TYPES,
+        selection_mode="multi",
+    )
+
+# JS to pin the header+filters container as sticky
+import streamlit.components.v1 as _components
+_components.html("""
+<script>
+(function() {
+    function applySticky() {
+        const doc = window.parent.document;
+        const header = doc.querySelector('.header-title');
+        if (!header) return false;
+        let el = header;
+        while (el) {
+            if (el.getAttribute && el.getAttribute('data-testid') === 'stLayoutWrapper') {
+                el.classList.add('sticky-filter-bar');
+                return true;
+            }
+            el = el.parentElement;
+        }
+        return false;
+    }
+    if (!applySticky()) {
+        const obs = new MutationObserver(() => { if (applySticky()) obs.disconnect(); });
+        obs.observe(window.parent.document.body, {childList: true, subtree: true});
+        setTimeout(() => obs.disconnect(), 10000);
+    }
+})();
+</script>
+""", height=0)
+
+# ── Sidebar — compact controls only ─────────────────────────────────────────
 
 with st.sidebar:
     st.markdown("### Controls")
@@ -172,34 +259,17 @@ with st.sidebar:
             st.error("No data returned — try again shortly.")
 
     st.markdown("---")
-    st.markdown('<p class="section-label">Filter by set</p>', unsafe_allow_html=True)
 
-    selected_sets = st.multiselect(
-        "Sets",
-        options=SET_CODES,
-        default=SET_CODES,
-        format_func=lambda c: f"{c} — {SET_META[c]['name']}",
-        label_visibility="collapsed",
-    )
-
-    st.markdown('<p class="section-label">Filter by product type</p>', unsafe_allow_html=True)
-
-    selected_types = st.multiselect(
-        "Product types",
-        options=PRODUCT_TYPES,
-        default=PRODUCT_TYPES,
-        label_visibility="collapsed",
-    )
-
-    st.markdown("---")
-
-    price_metric = st.radio(
+    price_metric = st.segmented_control(
         "Price metric",
         options=["median", "avg"],
+        default="median",
         format_func=lambda x: "Median" if x == "median" else "Average",
-        index=0,
-        horizontal=True,
+        selection_mode="single",
     )
+    # Fallback if nothing selected
+    if not price_metric:
+        price_metric = "median"
 
     st.markdown("---")
     st.markdown('<p class="section-label">Dip detection</p>', unsafe_allow_html=True)
@@ -207,11 +277,37 @@ with st.sidebar:
     dip_threshold = st.slider("Dip threshold (%)", 1, 25, 5,
                                help="Alert when price drops this % below rolling average")
 
+    # ── CSV export ──
+    st.markdown("---")
+
+    def _build_export_csv() -> str:
+        """Build a combined CSV of sold + active data for download."""
+        rows = []
+        for mode in ("sold", "active"):
+            csv_path = DATA_DIR / f"prices_{mode}.csv"
+            if csv_path.exists():
+                df = pd.read_csv(csv_path)
+                df.insert(0, "mode", mode)
+                rows.append(df)
+        if rows:
+            return pd.concat(rows, ignore_index=True).to_csv(index=False)
+        return ""
+
+    csv_data = _build_export_csv()
+    if csv_data:
+        st.download_button(
+            "Download CSV",
+            data=csv_data,
+            file_name=f"pokemarket_export_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
 # Build selected product labels from set + type filters
 selected = []
 for s in SETS:
     label = f"{s['code']} {s['product']}"
-    if s['code'] in selected_sets and s['product'] in selected_types:
+    if s['code'] in (selected_sets or []) and s['product'] in (selected_types or []):
         selected.append(label)
 
 # ── Helpers ──────────────────────────────────────────────────────────────────

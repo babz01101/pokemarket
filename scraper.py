@@ -144,18 +144,23 @@ USER_AGENTS = [
 ]
 
 
-def build_url(query: str, sold: bool = True) -> str:
+MAX_PAGES = 3  # Scrape up to 3 pages per product (eBay shows ~60 cards/page)
+
+
+def build_url(query: str, sold: bool = True, page: int = 1) -> str:
     q = query.replace(" ", "+")
+    # eBay pagination: _pgn=page number, _ipg kept at default
+    page_param = f"&_pgn={page}" if page > 1 else ""
     if sold:
         return (
             f"https://www.ebay.com.au/sch/i.html?_nkw={q}"
-            f"&LH_Sold=1&LH_Complete=1&LH_PrefLoc=1&_sop=13"
+            f"&LH_Sold=1&LH_Complete=1&LH_PrefLoc=1&_sop=13{page_param}"
         )
     else:
         # Active listings, sorted by price + shipping (lowest first)
         return (
             f"https://www.ebay.com.au/sch/i.html?_nkw={q}"
-            f"&LH_PrefLoc=1&LH_BIN=1&_sop=15"
+            f"&LH_PrefLoc=1&LH_BIN=1&_sop=15{page_param}"
         )
 
 
@@ -202,26 +207,10 @@ def get_session() -> requests.Session:
 
 # ── Scraper ───────────────────────────────────────────────────────────────────
 
-def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> tuple[dict | None, list[dict]]:
-    """Scrape sold or active listings for one Pokemon set.
-    Returns (aggregate_stats, individual_listings)."""
-    url = build_url(set_info["query"], sold=sold)
-    mode = "sold" if sold else "active"
-    print(f"  Fetching: {set_info['code']} {set_info['product']} ({mode})...", end=" ", flush=True)
-
-    try:
-        resp = session.get(url, timeout=15)
-        resp.raise_for_status()
-    except requests.RequestException as e:
-        print(f"HTTP error: {e}")
-        return None, []
-
-    soup = BeautifulSoup(resp.text, "html.parser")
-
-    # eBay AU now uses .s-card (2025+), fall back to legacy .s-item
+def _parse_page(soup: BeautifulSoup, set_info: dict, sold: bool) -> list[dict]:
+    """Parse one page of eBay search results and return validated listings."""
     cards = soup.select(".s-card")
     use_new_layout = len(cards) > 0
-
     if not use_new_layout:
         cards = soup.select(".s-item")
 
@@ -241,13 +230,11 @@ def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> 
                 continue
             price_text = price_el.get_text(strip=True)
 
-            # Get listing URL
             link_el = card.select_one("a[href*='ebay.com']") or card.select_one("a")
             listing_url = link_el["href"] if link_el and link_el.get("href") else ""
 
             # Get sold date (e.g. "Sold  1 Apr 2026") or listing date
             sold_date = ""
-            listing_date = ""
             caption_el = card.select_one(".s-card__caption")
             if caption_el:
                 caption_text = caption_el.get_text(strip=True)
@@ -255,19 +242,8 @@ def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> 
                 if date_match:
                     if sold:
                         sold_date = date_match.group(1)
-                    else:
-                        listing_date = date_match.group(1)
 
-            # For active listings: also scan attribute rows for date patterns
-            if not sold and not listing_date:
-                for row in card.select(".s-card__attribute-row"):
-                    row_text = row.get_text(strip=True)
-                    dm = re.search(r'(\d{1,2}\s+\w{3}\s+\d{4})', row_text)
-                    if dm:
-                        listing_date = dm.group(1)
-                        break
-
-            # Seller info — only available in sold search results (not active BIN results)
+            # Seller info — only available in sold search results
             seller_name = ""
             seller_feedback = ""
             secondary_el = card.select_one(".su-card-container__attributes__secondary")
@@ -287,7 +263,6 @@ def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> 
                 if row_text.startswith("from "):
                     location = row_text
                     break
-            # "from Australia" = ok, no location text = Australian seller, anything else = skip
             if location and "australia" not in location.lower():
                 continue
         else:
@@ -305,9 +280,10 @@ def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> 
 
             link_el = card.select_one(".s-item__link")
             listing_url = link_el["href"] if link_el and link_el.get("href") else ""
-            sold_date = ""  # Legacy layout doesn't reliably show sold date
+            sold_date = ""
+            seller_name = ""
+            seller_feedback = ""
 
-            # Check seller location — skip international sellers
             location_el = card.select_one(".s-item__location")
             if location_el:
                 loc_text = location_el.get_text(strip=True).lower()
@@ -318,46 +294,40 @@ def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> 
         if "to" in price_text.lower():
             continue
 
-        # Only include AUD prices — skip US$/C$/etc. international listings
+        # Only include AUD prices
         if "AU" not in price_text and "A $" not in price_text:
             continue
 
-        # Skip multi-item lots (e.g. "2x", "3x", "x2", "x4", "lot of")
+        # Skip multi-item lots
         title_lower = title.lower()
         if re.search(r'\b\d+\s*x\b|\bx\s*\d+\b|\blot\b|\bbulk\b|\bcase\b', title_lower):
             continue
 
-        # Skip non-English versions (Japanese, Korean, Chinese, etc.)
+        # Skip non-English versions
         if any(kw in title_lower for kw in ["japanese", "japan", "korean", "chinese", "jp ", "jpn", "kor"]):
             continue
-        # Also skip if title contains Japanese/Chinese/Korean characters
         if re.search(r'[\u3000-\u9fff\uac00-\ud7af]', title):
             continue
 
         # Title validation
-        # title_must_any: at least one must match (set identifier — e.g. "me01" OR "mega evolution")
         title_must_any = set_info.get("title_must_any", [])
         if title_must_any and not any(kw in title_lower for kw in title_must_any):
             continue
-        # title_must: ALL must match (product type — e.g. "booster box")
         title_must = set_info.get("title_must", [])
         if title_must and not all(kw in title_lower for kw in title_must):
             continue
-        # title_must_not: NONE may match (cross-set exclusions + product type exclusions)
         title_must_not = set_info.get("title_must_not", [])
         if title_must_not and any(kw in title_lower for kw in title_must_not):
             continue
 
         price = parse_price(price_text)
         if price and 20 < price < 5000:
-            # Clean tracking params from URL
             clean_url = listing_url.split("?")[0] if listing_url else ""
             entry = {
                 "title": title,
                 "price": price,
                 "url": clean_url,
             }
-            # Sold mode: include individual sold date + seller info
             if sold:
                 if sold_date:
                     entry["date"] = sold_date
@@ -367,22 +337,69 @@ def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> 
                     entry["feedback"] = seller_feedback
             listings.append(entry)
 
-    if not listings:
-        print(f"no listings found (got {len(cards)} cards on page)")
+    return listings
+
+
+def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> tuple[dict | None, list[dict]]:
+    """Scrape sold or active listings for one Pokemon set across multiple pages.
+    Returns (aggregate_stats, individual_listings)."""
+    mode = "sold" if sold else "active"
+    print(f"  Fetching: {set_info['code']} {set_info['product']} ({mode})...", end=" ", flush=True)
+
+    all_listings: list[dict] = []
+    seen_urls: set[str] = set()
+
+    for page in range(1, MAX_PAGES + 1):
+        url = build_url(set_info["query"], sold=sold, page=page)
+
+        try:
+            resp = session.get(url, timeout=15)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            print(f"HTTP error on page {page}: {e}")
+            break
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+        page_listings = _parse_page(soup, set_info, sold)
+
+        if not page_listings:
+            break  # No more results — stop pagination
+
+        # De-duplicate by URL across pages
+        new_count = 0
+        for lst in page_listings:
+            u = lst.get("url", "")
+            if u and u in seen_urls:
+                continue
+            if u:
+                seen_urls.add(u)
+            all_listings.append(lst)
+            new_count += 1
+
+        if new_count == 0:
+            break  # All duplicates — reached end of results
+
+        # Brief pause between pages
+        if page < MAX_PAGES:
+            time.sleep(random.uniform(0.8, 1.8))
+
+    if not all_listings:
+        print(f"no listings found")
         return None, []
 
     # Filter outliers
-    raw_count = len(listings)
-    listings = filter_outliers(listings)
-    outliers_removed = raw_count - len(listings)
+    raw_count = len(all_listings)
+    all_listings = filter_outliers(all_listings)
+    outliers_removed = raw_count - len(all_listings)
 
-    prices = [l["price"] for l in listings]
+    prices = [l["price"] for l in all_listings]
     avg = sum(prices) / len(prices)
     med = calc_median(prices)
     low, high = min(prices), max(prices)
 
+    pages_fetched = min(MAX_PAGES, len(seen_urls) // 40 + 1) if seen_urls else 1
     suffix = f" ({outliers_removed} outliers removed)" if outliers_removed else ""
-    print(f"{len(prices)} sales | Med: ${med:.2f} | Avg: ${avg:.2f} | Range: ${low:.2f}-${high:.2f}{suffix}")
+    print(f"{len(prices)} sales ({len(seen_urls)} unique across {pages_fetched}p) | Med: ${med:.2f} | Avg: ${avg:.2f} | Range: ${low:.2f}-${high:.2f}{suffix}")
 
     stats = {
         "name": set_info["name"],
@@ -395,7 +412,7 @@ def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> 
         "count": len(prices),
     }
 
-    return stats, listings
+    return stats, all_listings
 
 
 # ── Data persistence ──────────────────────────────────────────────────────────
