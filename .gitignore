@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+data/debug_*.html
+data/debug_*.txt
+data/active_sample.html
+.DS_Store

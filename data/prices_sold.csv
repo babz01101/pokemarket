@@ -1,0 +1,33 @@
+date,code,name,product,median,avg,low,high,count
+2026-04-01,ME01,Mega Evolution,Booster Box,400.0,403.33,390.0,419.99,3
+2026-04-01,ME01,Mega Evolution,Enhanced Booster Box,409.95,410.73,360.0,449.99,39
+2026-04-01,ME01,Mega Evolution,ETB,159.5,157.1,139.99,185.0,20
+2026-04-01,ME01,Mega Evolution,PC ETB,162.47,158.28,139.99,185.0,16
+2026-04-01,ME01,Mega Evolution,Booster Bundle,84.97,82.35,70.0,89.99,20
+2026-04-01,ME02,Phantasmal Flames,Booster Box,500.0,505.15,419.0,600.0,44
+2026-04-01,ME02,Phantasmal Flames,ETB,170.0,172.35,145.0,200.0,50
+2026-04-01,ME02,Phantasmal Flames,PC ETB,162.47,161.23,124.99,225.0,54
+2026-04-01,ME02,Phantasmal Flames,Booster Bundle,85.0,84.53,70.0,105.0,43
+2026-04-01,ME2.5,Ascended Heroes,ETB,190.7,192.49,165.0,230.0,38
+2026-04-01,ME2.5,Ascended Heroes,PC ETB,180.0,186.9,168.88,219.0,27
+2026-04-01,ME2.5,Ascended Heroes,Booster Bundle,100.0,100.37,79.0,130.0,24
+2026-04-01,ME03,Perfect Order,Booster Box,328.0,329.9,286.0,425.0,21
+2026-04-01,ME03,Perfect Order,ETB,122.4,123.87,100.0,145.0,27
+2026-04-01,ME03,Perfect Order,PC ETB,129.47,130.17,122.4,140.0,8
+2026-04-01,ME03,Perfect Order,Booster Bundle,70.0,73.82,57.0,93.5,11
+2026-04-02,ME01,Mega Evolution,Booster Box,400.0,400.0,400.0,400.0,1
+2026-04-02,ME01,Mega Evolution,Enhanced Booster Box,422.0,420.62,375.0,498.0,36
+2026-04-02,ME01,Mega Evolution,ETB,164.95,160.06,139.0,185.0,21
+2026-04-02,ME01,Mega Evolution,PC ETB,164.99,162.57,139.0,185.0,19
+2026-04-02,ME01,Mega Evolution,Booster Bundle,85.0,84.31,70.0,100.0,23
+2026-04-02,ME02,Phantasmal Flames,Booster Box,500.0,506.29,419.0,600.0,44
+2026-04-02,ME02,Phantasmal Flames,ETB,170.0,172.35,145.0,200.0,50
+2026-04-02,ME02,Phantasmal Flames,PC ETB,155.0,158.81,130.0,225.0,55
+2026-04-02,ME02,Phantasmal Flames,Booster Bundle,85.0,85.91,70.0,115.99,45
+2026-04-02,ME2.5,Ascended Heroes,ETB,191.4,192.94,165.0,230.0,39
+2026-04-02,ME2.5,Ascended Heroes,PC ETB,180.0,184.98,159.95,219.0,27
+2026-04-02,ME2.5,Ascended Heroes,Booster Bundle,100.0,101.26,79.0,140.0,27
+2026-04-02,ME03,Perfect Order,Booster Box,328.0,328.56,286.0,425.0,23
+2026-04-02,ME03,Perfect Order,ETB,122.4,124.39,100.0,147.98,29
+2026-04-02,ME03,Perfect Order,PC ETB,129.0,126.82,110.0,140.0,15
+2026-04-02,ME03,Perfect Order,Booster Bundle,70.0,73.82,57.0,93.5,11

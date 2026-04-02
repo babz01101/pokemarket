@@ -1,0 +1,505 @@
+"""
+PokeMarket Scraper — eBay Australia sold listings
+Uses requests + BeautifulSoup (no headless browser needed).
+Saves aggregate results to data/prices.csv and individual sales to data/sales.json.
+"""
+
+from __future__ import annotations
+
+import csv
+import json
+import os
+import re
+import random
+import time
+from datetime import datetime
+from pathlib import Path
+from statistics import median as calc_median
+
+import requests
+from bs4 import BeautifulSoup
+
+# ── Pokemon TCG sets to track ────────────────────────────────────────────────
+
+# Cross-set exclusions: each set must exclude the other set names from titles
+_OTHER_SETS = {
+    "ME01": ["phantasmal flames", "ascended heroes", "perfect order", "chaos rising"],
+    "ME02": ["ascended heroes", "perfect order", "chaos rising"],
+    "ME2.5": ["phantasmal flames", "perfect order", "chaos rising"],
+    "ME03": ["phantasmal flames", "ascended heroes", "chaos rising"],
+}
+
+SETS = [
+    # ── ME01 — Mega Evolution (Sep 2025) ──
+    #    title_must_any: at least one of these must appear (handles "ME01", "ME-01", "mega evolution base")
+    {"name": "Mega Evolution",    "code": "ME01",  "product": "Booster Box",
+     "query": "mega evolution ME01 booster box sealed",
+     "title_must_any": ["me01", "me-01", "mega evolution"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _OTHER_SETS["ME01"]},
+
+    {"name": "Mega Evolution",    "code": "ME01",  "product": "Enhanced Booster Box",
+     "query": "mega evolution ME01 enhanced booster box sealed",
+     "title_must_any": ["me01", "me-01", "mega evolution"],
+     "title_must": ["enhanced"],
+     "title_must_not": ["bundle"] + _OTHER_SETS["ME01"]},
+
+    {"name": "Mega Evolution",    "code": "ME01",  "product": "ETB",
+     "query": "mega evolution ME01 elite trainer box sealed",
+     "title_must_any": ["me01", "me-01", "mega evolution"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["pokemon centre", "pokemon center", "bundle"] + _OTHER_SETS["ME01"]},
+
+    {"name": "Mega Evolution",    "code": "ME01",  "product": "PC ETB",
+     "query": "mega evolution ME01 pokemon centre elite trainer box sealed",
+     "title_must_any": ["me01", "me-01", "mega evolution"],
+     "title_must": ["elite trainer"],
+     "title_must_not": [] + _OTHER_SETS["ME01"]},
+
+    {"name": "Mega Evolution",    "code": "ME01",  "product": "Booster Bundle",
+     "query": "mega evolution ME01 booster bundle sealed",
+     "title_must_any": ["me01", "me-01", "mega evolution"],
+     "title_must": ["bundle"],
+     "title_must_not": ["booster box"] + _OTHER_SETS["ME01"]},
+
+    # ── ME02 — Phantasmal Flames (Nov 2025) ──
+    {"name": "Phantasmal Flames", "code": "ME02",  "product": "Booster Box",
+     "query": "phantasmal flames booster box sealed",
+     "title_must_any": ["me02", "me-02", "phantasmal flames"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _OTHER_SETS["ME02"]},
+
+    {"name": "Phantasmal Flames", "code": "ME02",  "product": "ETB",
+     "query": "phantasmal flames elite trainer box sealed",
+     "title_must_any": ["me02", "me-02", "phantasmal flames"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["pokemon centre", "pokemon center", "bundle"] + _OTHER_SETS["ME02"]},
+
+    {"name": "Phantasmal Flames", "code": "ME02",  "product": "PC ETB",
+     "query": "phantasmal flames pokemon centre elite trainer box sealed",
+     "title_must_any": ["me02", "me-02", "phantasmal flames"],
+     "title_must": ["elite trainer"],
+     "title_must_not": [] + _OTHER_SETS["ME02"]},
+
+    {"name": "Phantasmal Flames", "code": "ME02",  "product": "Booster Bundle",
+     "query": "phantasmal flames booster bundle sealed",
+     "title_must_any": ["me02", "me-02", "phantasmal flames"],
+     "title_must": ["bundle"],
+     "title_must_not": ["booster box"] + _OTHER_SETS["ME02"]},
+
+    # ── ME2.5 — Ascended Heroes (Jan 2026) ──
+    {"name": "Ascended Heroes",   "code": "ME2.5", "product": "ETB",
+     "query": "ascended heroes elite trainer box sealed",
+     "title_must_any": ["me2.5", "me2 5", "ascended heroes"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["pokemon centre", "pokemon center", "bundle"] + _OTHER_SETS["ME2.5"]},
+
+    {"name": "Ascended Heroes",   "code": "ME2.5", "product": "PC ETB",
+     "query": "ascended heroes pokemon centre elite trainer box sealed",
+     "title_must_any": ["me2.5", "me2 5", "ascended heroes"],
+     "title_must": ["elite trainer"],
+     "title_must_not": [] + _OTHER_SETS["ME2.5"]},
+
+    {"name": "Ascended Heroes",   "code": "ME2.5", "product": "Booster Bundle",
+     "query": "ascended heroes booster bundle sealed",
+     "title_must_any": ["me2.5", "me2 5", "ascended heroes"],
+     "title_must": ["bundle"],
+     "title_must_not": ["booster box"] + _OTHER_SETS["ME2.5"]},
+
+    # ── ME03 — Perfect Order (Mar 2026) ──
+    {"name": "Perfect Order",     "code": "ME03",  "product": "Booster Box",
+     "query": "perfect order ME03 booster box sealed",
+     "title_must_any": ["me03", "me-03", "perfect order"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _OTHER_SETS["ME03"]},
+
+    {"name": "Perfect Order",     "code": "ME03",  "product": "ETB",
+     "query": "perfect order ME03 elite trainer box sealed",
+     "title_must_any": ["me03", "me-03", "perfect order"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["pokemon centre", "pokemon center", "bundle"] + _OTHER_SETS["ME03"]},
+
+    {"name": "Perfect Order",     "code": "ME03",  "product": "PC ETB",
+     "query": "perfect order ME03 pokemon centre elite trainer box sealed",
+     "title_must_any": ["me03", "me-03", "perfect order"],
+     "title_must": ["elite trainer"],
+     "title_must_not": [] + _OTHER_SETS["ME03"]},
+
+    {"name": "Perfect Order",     "code": "ME03",  "product": "Booster Bundle",
+     "query": "perfect order ME03 booster bundle sealed",
+     "title_must_any": ["me03", "me-03", "perfect order"],
+     "title_must": ["bundle"],
+     "title_must_not": ["booster box"] + _OTHER_SETS["ME03"]},
+]
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+DATA_DIR = Path(__file__).parent / "data"
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+]
+
+
+def build_url(query: str, sold: bool = True) -> str:
+    q = query.replace(" ", "+")
+    if sold:
+        return (
+            f"https://www.ebay.com.au/sch/i.html?_nkw={q}"
+            f"&LH_Sold=1&LH_Complete=1&LH_PrefLoc=1&_sop=13"
+        )
+    else:
+        # Active listings, sorted by price + shipping (lowest first)
+        return (
+            f"https://www.ebay.com.au/sch/i.html?_nkw={q}"
+            f"&LH_PrefLoc=1&LH_BIN=1&_sop=15"
+        )
+
+
+def parse_price(text: str):
+    """Extract a numeric AUD price from eBay price text."""
+    text = text.replace(",", "").replace("AU $", "").replace("A $", "").strip()
+    match = re.search(r"[\d]+\.?\d*", text)
+    return float(match.group()) if match else None
+
+
+def filter_outliers(listings: list[dict]) -> list[dict]:
+    """Remove statistical outliers using IQR method."""
+    if len(listings) < 4:
+        return listings
+
+    prices = sorted(l["price"] for l in listings)
+    q1 = prices[len(prices) // 4]
+    q3 = prices[3 * len(prices) // 4]
+    iqr = q3 - q1
+    lower = q1 - 1.5 * iqr
+    upper = q3 + 1.5 * iqr
+
+    return [l for l in listings if lower <= l["price"] <= upper]
+
+
+def get_session() -> requests.Session:
+    """Create a requests session with realistic browser headers."""
+    s = requests.Session()
+    s.headers.update({
+        "User-Agent": random.choice(USER_AGENTS),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-AU,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+    })
+    return s
+
+
+# ── Scraper ───────────────────────────────────────────────────────────────────
+
+def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> tuple[dict | None, list[dict]]:
+    """Scrape sold or active listings for one Pokemon set.
+    Returns (aggregate_stats, individual_listings)."""
+    url = build_url(set_info["query"], sold=sold)
+    mode = "sold" if sold else "active"
+    print(f"  Fetching: {set_info['code']} {set_info['product']} ({mode})...", end=" ", flush=True)
+
+    try:
+        resp = session.get(url, timeout=15)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        print(f"HTTP error: {e}")
+        return None, []
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+
+    # eBay AU now uses .s-card (2025+), fall back to legacy .s-item
+    cards = soup.select(".s-card")
+    use_new_layout = len(cards) > 0
+
+    if not use_new_layout:
+        cards = soup.select(".s-item")
+
+    listings: list[dict] = []
+
+    for card in cards:
+        if use_new_layout:
+            title_el = card.select_one(".s-card__title")
+            if not title_el:
+                continue
+            title = title_el.get_text(strip=True)
+            if "shop on ebay" in title.lower():
+                continue
+
+            price_el = card.select_one(".s-card__price")
+            if not price_el:
+                continue
+            price_text = price_el.get_text(strip=True)
+
+            # Get listing URL
+            link_el = card.select_one("a[href*='ebay.com']") or card.select_one("a")
+            listing_url = link_el["href"] if link_el and link_el.get("href") else ""
+
+            # Get sold date (e.g. "Sold  1 Apr 2026") or listing date
+            sold_date = ""
+            listing_date = ""
+            caption_el = card.select_one(".s-card__caption")
+            if caption_el:
+                caption_text = caption_el.get_text(strip=True)
+                date_match = re.search(r'(\d{1,2}\s+\w{3}\s+\d{4})', caption_text)
+                if date_match:
+                    if sold:
+                        sold_date = date_match.group(1)
+                    else:
+                        listing_date = date_match.group(1)
+
+            # For active listings: also scan attribute rows for date patterns
+            if not sold and not listing_date:
+                for row in card.select(".s-card__attribute-row"):
+                    row_text = row.get_text(strip=True)
+                    dm = re.search(r'(\d{1,2}\s+\w{3}\s+\d{4})', row_text)
+                    if dm:
+                        listing_date = dm.group(1)
+                        break
+
+            # Seller info — only available in sold search results (not active BIN results)
+            seller_name = ""
+            seller_feedback = ""
+            secondary_el = card.select_one(".su-card-container__attributes__secondary")
+            if secondary_el:
+                sec_text = secondary_el.get_text(" ", strip=True)
+                fm = re.search(r'\((\d[\d,]*)\)', sec_text)
+                if fm:
+                    seller_feedback = fm.group(1).replace(",", "")
+                nm = re.match(r'^(\S+)', sec_text.strip())
+                if nm and nm.group(1).lower() not in {"sponsored", "new", "listing", "ebay"}:
+                    seller_name = nm.group(1)
+
+            # Check seller location — skip international sellers
+            location = ""
+            for row in card.select(".s-card__attribute-row"):
+                row_text = row.get_text(strip=True)
+                if row_text.startswith("from "):
+                    location = row_text
+                    break
+            # "from Australia" = ok, no location text = Australian seller, anything else = skip
+            if location and "australia" not in location.lower():
+                continue
+        else:
+            title_el = card.select_one(".s-item__title")
+            if not title_el:
+                continue
+            title = title_el.get_text(strip=True)
+            if "shop on ebay" in title.lower():
+                continue
+
+            price_el = card.select_one(".s-item__price")
+            if not price_el:
+                continue
+            price_text = price_el.get_text(strip=True)
+
+            link_el = card.select_one(".s-item__link")
+            listing_url = link_el["href"] if link_el and link_el.get("href") else ""
+            sold_date = ""  # Legacy layout doesn't reliably show sold date
+
+            # Check seller location — skip international sellers
+            location_el = card.select_one(".s-item__location")
+            if location_el:
+                loc_text = location_el.get_text(strip=True).lower()
+                if loc_text and "australia" not in loc_text:
+                    continue
+
+        # Skip price ranges like "$100.00 to $200.00"
+        if "to" in price_text.lower():
+            continue
+
+        # Only include AUD prices — skip US$/C$/etc. international listings
+        if "AU" not in price_text and "A $" not in price_text:
+            continue
+
+        # Skip multi-item lots (e.g. "2x", "3x", "x2", "x4", "lot of")
+        title_lower = title.lower()
+        if re.search(r'\b\d+\s*x\b|\bx\s*\d+\b|\blot\b|\bbulk\b|\bcase\b', title_lower):
+            continue
+
+        # Skip non-English versions (Japanese, Korean, Chinese, etc.)
+        if any(kw in title_lower for kw in ["japanese", "japan", "korean", "chinese", "jp ", "jpn", "kor"]):
+            continue
+        # Also skip if title contains Japanese/Chinese/Korean characters
+        if re.search(r'[\u3000-\u9fff\uac00-\ud7af]', title):
+            continue
+
+        # Title validation
+        # title_must_any: at least one must match (set identifier — e.g. "me01" OR "mega evolution")
+        title_must_any = set_info.get("title_must_any", [])
+        if title_must_any and not any(kw in title_lower for kw in title_must_any):
+            continue
+        # title_must: ALL must match (product type — e.g. "booster box")
+        title_must = set_info.get("title_must", [])
+        if title_must and not all(kw in title_lower for kw in title_must):
+            continue
+        # title_must_not: NONE may match (cross-set exclusions + product type exclusions)
+        title_must_not = set_info.get("title_must_not", [])
+        if title_must_not and any(kw in title_lower for kw in title_must_not):
+            continue
+
+        price = parse_price(price_text)
+        if price and 20 < price < 5000:
+            # Clean tracking params from URL
+            clean_url = listing_url.split("?")[0] if listing_url else ""
+            entry = {
+                "title": title,
+                "price": price,
+                "url": clean_url,
+            }
+            # Sold mode: include individual sold date + seller info
+            if sold:
+                if sold_date:
+                    entry["date"] = sold_date
+                if seller_name:
+                    entry["seller"] = seller_name
+                if seller_feedback:
+                    entry["feedback"] = seller_feedback
+            listings.append(entry)
+
+    if not listings:
+        print(f"no listings found (got {len(cards)} cards on page)")
+        return None, []
+
+    # Filter outliers
+    raw_count = len(listings)
+    listings = filter_outliers(listings)
+    outliers_removed = raw_count - len(listings)
+
+    prices = [l["price"] for l in listings]
+    avg = sum(prices) / len(prices)
+    med = calc_median(prices)
+    low, high = min(prices), max(prices)
+
+    suffix = f" ({outliers_removed} outliers removed)" if outliers_removed else ""
+    print(f"{len(prices)} sales | Med: ${med:.2f} | Avg: ${avg:.2f} | Range: ${low:.2f}-${high:.2f}{suffix}")
+
+    stats = {
+        "name": set_info["name"],
+        "code": set_info["code"],
+        "product": set_info["product"],
+        "avg": round(avg, 2),
+        "median": round(med, 2),
+        "low": round(low, 2),
+        "high": round(high, 2),
+        "count": len(prices),
+    }
+
+    return stats, listings
+
+
+# ── Data persistence ──────────────────────────────────────────────────────────
+
+def save_results(results: list[dict], mode: str = "sold"):
+    """Save today's aggregate results to CSV, replacing any earlier scrape from the same day."""
+    DATA_DIR.mkdir(exist_ok=True)
+    csv_path = DATA_DIR / f"prices_{mode}.csv"
+    today = datetime.now().strftime("%Y-%m-%d")
+    fieldnames = ["date", "code", "name", "product", "median", "avg", "low", "high", "count"]
+
+    existing: list[dict] = []
+    if csv_path.exists():
+        with open(csv_path, newline="") as f:
+            existing = [row for row in csv.DictReader(f) if row["date"] != today]
+
+    with open(csv_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(existing)
+        for r in results:
+            writer.writerow({"date": today, **r})
+
+    print(f"\n  {mode.capitalize()} data saved to {csv_path}")
+
+
+def save_sales(all_sales: dict[str, list[dict]], mode: str = "sold"):
+    """Save individual listings to JSON (keyed by date > product label)."""
+    DATA_DIR.mkdir(exist_ok=True)
+    sales_path = DATA_DIR / f"sales_{mode}.json"
+    today = datetime.now().strftime("%Y-%m-%d")
+
+    existing = {}
+    if sales_path.exists():
+        with open(sales_path) as f:
+            existing = json.load(f)
+
+    existing[today] = all_sales
+
+    with open(sales_path, "w") as f:
+        json.dump(existing, f, indent=2)
+
+    print(f"  Individual {mode} listings saved to {sales_path}")
+
+
+# ── Main ──────────────────────────────────────────────────────────────────────
+
+def _scrape_mode(session: requests.Session, sold: bool) -> tuple[list[dict], dict[str, list[dict]]]:
+    """Scrape all sets for one mode (sold or active)."""
+    mode = "sold" if sold else "active"
+    results = []
+    all_sales: dict[str, list[dict]] = {}
+
+    for i, set_info in enumerate(SETS):
+        stats, listings = scrape_set(session, set_info, sold=sold)
+        if stats:
+            results.append(stats)
+            label = f"{set_info['code']} {set_info['product']}"
+            all_sales[label] = listings
+        if i < len(SETS) - 1:
+            delay = random.uniform(1.5, 4.0)
+            time.sleep(delay)
+
+    if results:
+        save_results(results, mode=mode)
+        save_sales(all_sales, mode=mode)
+
+    return results, all_sales
+
+
+def run():
+    print("=" * 55)
+    print("  PokeMarket Scraper — eBay Australia")
+    print("=" * 55)
+
+    session = get_session()
+
+    # ── Sold listings ──
+    print("\n--- SOLD LISTINGS ---")
+    sold_results, _ = _scrape_mode(session, sold=True)
+
+    # Brief pause between modes
+    time.sleep(random.uniform(3.0, 6.0))
+
+    # ── Active listings ──
+    print("\n--- ACTIVE LISTINGS ---")
+    active_results, _ = _scrape_mode(session, sold=False)
+
+    # Print summary
+    for label, results in [("SOLD", sold_results), ("ACTIVE", active_results)]:
+        print(f"\n{'=' * 75}")
+        print(f"  {label}")
+        print(f"  {'Code':<8} {'Set':<25} {'Type':<20} {'Median':>10} {'Count':>6}")
+        print("-" * 75)
+        for r in results:
+            print(f"  {r['code']:<8} {r['name']:<25} {r['product']:<20} ${r['median']:>8.2f} {r['count']:>6}")
+        print("=" * 75)
+
+    if not sold_results and not active_results:
+        print("  No data collected. eBay may be rate-limiting.")
+        print("  Try again in a few minutes.")
+
+    return sold_results + active_results
+
+
+if __name__ == "__main__":
+    run()
