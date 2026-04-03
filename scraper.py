@@ -34,6 +34,37 @@ SINGLES = [
      "title_must_any": ["lillie", "clefairy"],
      "title_must": ["184", "psa 10"],
      "title_must_not": ["lot", "bundle", "japanese", "korean", "psa 9", "psa 8", "psa 7", "cgc", "bgs"]},
+
+    {"name": "Journey Together", "code": "JT", "product": "Lillie's Clefairy ex 184/159 SIR PSA 9",
+     "query": "lillie's clefairy ex 184 159 journey together psa 9",
+     "title_must_any": ["lillie", "clefairy"],
+     "title_must": ["184", "psa 9"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean", "psa 10", "psa 8", "psa 7", "cgc", "bgs"]},
+
+    {"name": "Journey Together", "code": "JT", "product": "Lillie's Clefairy ex 184/159 SIR Raw",
+     "query": "lillie's clefairy ex 184 159 journey together SIR",
+     "title_must_any": ["lillie", "clefairy"],
+     "title_must": ["184"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean", "psa", "cgc", "bgs", "beckett", "graded"]},
+
+    # ── SV10 — Team Rocket's Mewtwo ex 231/182 SIR ──
+    {"name": "Destined Rivals", "code": "SV10", "product": "Team Rocket's Mewtwo ex 231/182 SIR PSA 10",
+     "query": "team rocket's mewtwo ex 231 182 psa 10",
+     "title_must_any": ["mewtwo", "rocket"],
+     "title_must": ["231", "psa 10"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean", "psa 9", "psa 8", "psa 7", "cgc", "bgs"]},
+
+    {"name": "Destined Rivals", "code": "SV10", "product": "Team Rocket's Mewtwo ex 231/182 SIR PSA 9",
+     "query": "team rocket's mewtwo ex 231 182 psa 9",
+     "title_must_any": ["mewtwo", "rocket"],
+     "title_must": ["231", "psa 9"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean", "psa 10", "psa 8", "psa 7", "cgc", "bgs"]},
+
+    {"name": "Destined Rivals", "code": "SV10", "product": "Team Rocket's Mewtwo ex 231/182 SIR Raw",
+     "query": "team rocket's mewtwo ex 231 182 SIR",
+     "title_must_any": ["mewtwo", "rocket"],
+     "title_must": ["231"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean", "psa", "cgc", "bgs", "beckett", "graded"]},
 ]
 
 # Cross-set exclusions: each set must exclude the other set names from titles

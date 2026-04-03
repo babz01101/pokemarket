@@ -27,6 +27,7 @@ SET_META = {
     "ME03":  {"name": "Perfect Order",     "released": "Mar 2026", "color": "#00c9a7"},
     "PROMO": {"name": "EB Games Promos",   "released": "2026",     "color": "#e040fb"},
     "JT":    {"name": "Journey Together",  "released": "Mar 2025", "color": "#f06292"},
+    "SV10":  {"name": "Destined Rivals",  "released": "Apr 2025", "color": "#9c27b0"},
 }
 
 ALL_ITEMS = SETS + SINGLES
@@ -198,7 +199,7 @@ with st.container():
     <div class="header-container">
         <div>
             <p class="header-title">PokeMarket</p>
-            <p class="header-subtitle">Mega Evolution Sealed Product Tracker &mdash; eBay Australia &mdash; Buy the Dip</p>
+            <p class="header-subtitle">Sealed &amp; Singles Price Tracker &mdash; eBay Australia &mdash; Buy the Dip</p>
             <p style="color:#666; font-size:0.75rem; margin:0.2rem 0 0 0;">Last updated: {_last_updated}</p>
         </div>
     </div>
@@ -210,13 +211,6 @@ with st.container():
         default=SET_CODES,
         selection_mode="multi",
         format_func=lambda c: set_options[c],
-    )
-
-    selected_types = st.pills(
-        "Products",
-        options=PRODUCT_TYPES,
-        default=PRODUCT_TYPES,
-        selection_mode="multi",
     )
 
 # JS to pin the header+filters container as sticky
@@ -260,6 +254,32 @@ with st.sidebar:
             st.rerun()
         else:
             st.error("No data returned — try again shortly.")
+
+    st.markdown("---")
+    st.markdown('<p class="section-label">Filter by product</p>', unsafe_allow_html=True)
+
+    # Group products into categories for cleaner display
+    _sealed = sorted(set(s["product"] for s in SETS))
+    _singles = sorted(set(s["product"] for s in SINGLES))
+
+    # Select all / clear toggle
+    _all_products = _sealed + _singles
+    all_on = st.toggle("Select all products", value=True, key="product_toggle")
+
+    selected_types = []
+    if all_on:
+        selected_types = _all_products
+    else:
+        if _sealed:
+            st.caption("Sealed")
+            for p in _sealed:
+                if st.checkbox(p, value=True, key=f"prod_{p}"):
+                    selected_types.append(p)
+        if _singles:
+            st.caption("Singles / Graded")
+            for p in _singles:
+                if st.checkbox(p, value=True, key=f"prod_{p}"):
+                    selected_types.append(p)
 
     st.markdown("---")
 
