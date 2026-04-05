@@ -1,5 +1,5 @@
 """
-PokeMarket Dashboard — Mega Evolution dip-buying tracker.
+PokeMarket Dashboard — multi-game TCG price tracker.
 Run with:  streamlit run app.py
 """
 
@@ -8,31 +8,50 @@ from __future__ import annotations
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 import json
-
-from scraper import run as run_scraper, SETS, SINGLES
 from datetime import datetime
+
+from scraper import run as run_pokemon_scraper, SETS as POKE_SETS, SINGLES as POKE_SINGLES
+from scraper_onepiece import run as run_op_scraper, SETS as OP_SETS
 
 DATA_DIR = Path(__file__).parent / "data"
 
-# ── Set metadata ─────────────────────────────────────────────────────────────
+# ── Game metadata ──────────────────────────────────────────────────────────────
 
-SET_META = {
+POKE_SET_META = {
     "ME01":  {"name": "Mega Evolution",    "released": "Sep 2025", "color": "#ffcb05"},
     "ME02":  {"name": "Phantasmal Flames", "released": "Nov 2025", "color": "#ff6b35"},
     "ME2.5": {"name": "Ascended Heroes",   "released": "Jan 2026", "color": "#7b68ee"},
     "ME03":  {"name": "Perfect Order",     "released": "Mar 2026", "color": "#00c9a7"},
     "PROMO": {"name": "EB Games Promos",   "released": "2026",     "color": "#e040fb"},
     "JT":    {"name": "Journey Together",  "released": "Mar 2025", "color": "#f06292"},
-    "SV10":  {"name": "Destined Rivals",  "released": "Apr 2025", "color": "#9c27b0"},
+    "SV10":  {"name": "Destined Rivals",   "released": "Apr 2025", "color": "#9c27b0"},
 }
 
-ALL_ITEMS = SETS + SINGLES
-PRODUCT_TYPES = sorted(set(s["product"] for s in ALL_ITEMS))
-SET_CODES = list(SET_META.keys())
+OP_SET_META = {
+    "OP-01":  {"name": "Romance Dawn",             "released": "Dec 2022", "color": "#e74c3c"},
+    "OP-02":  {"name": "Paramount War",             "released": "Mar 2023", "color": "#3498db"},
+    "OP-03":  {"name": "Pillars of Strength",       "released": "Jun 2023", "color": "#e67e22"},
+    "OP-04":  {"name": "Kingdoms of Intrigue",      "released": "Sep 2023", "color": "#9b59b6"},
+    "OP-05":  {"name": "Awakening of the New Era",  "released": "Dec 2023", "color": "#f1c40f"},
+    "OP-06":  {"name": "Wings of the Captain",      "released": "Mar 2024", "color": "#1abc9c"},
+    "OP-07":  {"name": "500 Years in the Future",   "released": "Jun 2024", "color": "#2ecc71"},
+    "OP-08":  {"name": "Two Legends",               "released": "Sep 2024", "color": "#e91e63"},
+    "OP-09":  {"name": "Emperors in the New World",  "released": "Dec 2024", "color": "#3f51b5"},
+    "OP-10":  {"name": "Royal Blood",               "released": "Mar 2025", "color": "#c0392b"},
+    "OP-11":  {"name": "A Fist of Divine Speed",    "released": "Jun 2025", "color": "#27ae60"},
+    "OP-12":  {"name": "Legacy of the Master",      "released": "Sep 2025", "color": "#607d8b"},
+    "OP-13":  {"name": "Carrying on His Will",      "released": "Nov 2025", "color": "#ff7043"},
+    "OP-14":  {"name": "The Azure Sea's Seven",     "released": "Jan 2026", "color": "#00bcd4"},
+    "EB-01":  {"name": "Memorial Collection",       "released": "2024",     "color": "#ec407a"},
+    "EB-02":  {"name": "Anime 25th Collection",     "released": "2025",     "color": "#ffb300"},
+    "EB-03":  {"name": "Heroines Edition",          "released": "2025",     "color": "#f48fb1"},
+    "EB-04":  {"name": "Egghead Crisis",            "released": "2025",     "color": "#80cbc4"},
+    "PRB-01": {"name": "Card The Best",             "released": "2024",     "color": "#cd7f32"},
+    "PRB-02": {"name": "Card The Best Vol.2",       "released": "2025",     "color": "#b0bec5"},
+}
 
 # ── Page config ──────────────────────────────────────────────────────────────
 
@@ -144,7 +163,7 @@ st.markdown("""
         margin-bottom: 0.5rem;
     }
 
-    /* Sticky filter bar class — applied via JS to the header+filters container */
+    /* Sticky filter bar */
     .sticky-filter-bar {
         position: sticky !important;
         top: 0px !important;
@@ -154,7 +173,7 @@ st.markdown("""
         border-bottom: 1px solid rgba(255,255,255,0.06) !important;
     }
 
-    /* Style the st.pills widget */
+    /* Pills / segmented control */
     div[data-testid="stPills"] button {
         border-radius: 20px !important;
         font-size: 0.82rem !important;
@@ -170,170 +189,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Helpers: last-updated timestamp ──────────────────────────────────────────
-
-def _get_last_updated() -> str:
-    """Return the most recent modification time across data files."""
-    candidates = [
-        DATA_DIR / "prices_sold.csv",
-        DATA_DIR / "prices_active.csv",
-    ]
-    latest = None
-    for p in candidates:
-        if p.exists():
-            mtime = p.stat().st_mtime
-            if latest is None or mtime > latest:
-                latest = mtime
-    if latest:
-        dt = datetime.fromtimestamp(latest)
-        return dt.strftime("%-d %b %Y at %-I:%M %p")
-    return "Never"
-
-# ── Header + Filters (sticky container) ──────────────────────────────────────
-
-_last_updated = _get_last_updated()
-set_options = {c: f"{c} — {SET_META[c]['name']}" for c in SET_CODES}
-
-with st.container():
-    st.markdown(f"""
-    <div class="header-container">
-        <div>
-            <p class="header-title">PokeMarket</p>
-            <p class="header-subtitle">Sealed &amp; Singles Price Tracker &mdash; eBay Australia &mdash; Buy the Dip</p>
-            <p style="color:#666; font-size:0.75rem; margin:0.2rem 0 0 0;">Last updated: {_last_updated}</p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    selected_sets = st.pills(
-        "Sets",
-        options=SET_CODES,
-        default=SET_CODES,
-        selection_mode="multi",
-        format_func=lambda c: set_options[c],
-    )
-
-# JS to pin the header+filters container as sticky
-import streamlit.components.v1 as _components
-_components.html("""
-<script>
-(function() {
-    function applySticky() {
-        const doc = window.parent.document;
-        const header = doc.querySelector('.header-title');
-        if (!header) return false;
-        let el = header;
-        while (el) {
-            if (el.getAttribute && el.getAttribute('data-testid') === 'stLayoutWrapper') {
-                el.classList.add('sticky-filter-bar');
-                return true;
-            }
-            el = el.parentElement;
-        }
-        return false;
-    }
-    if (!applySticky()) {
-        const obs = new MutationObserver(() => { if (applySticky()) obs.disconnect(); });
-        obs.observe(window.parent.document.body, {childList: true, subtree: true});
-        setTimeout(() => obs.disconnect(), 10000);
-    }
-})();
-</script>
-""", height=0)
-
-# ── Sidebar — compact controls only ─────────────────────────────────────────
-
-with st.sidebar:
-    st.markdown("### Controls")
-
-    if st.button("Refresh Prices", type="primary", use_container_width=True):
-        with st.spinner("Scraping eBay AU (sold + active)..."):
-            results = run_scraper()
-        if results:
-            st.success(f"Updated {len(results)} products!")
-            st.rerun()
-        else:
-            st.error("No data returned — try again shortly.")
-
-    st.markdown("---")
-    st.markdown('<p class="section-label">Filter by product</p>', unsafe_allow_html=True)
-
-    # Group products into categories for cleaner display
-    _sealed = sorted(set(s["product"] for s in SETS))
-    _singles = sorted(set(s["product"] for s in SINGLES))
-
-    # Select all / clear toggle
-    _all_products = _sealed + _singles
-    all_on = st.toggle("Select all products", value=True, key="product_toggle")
-
-    selected_types = []
-    if all_on:
-        selected_types = _all_products
-    else:
-        if _sealed:
-            st.caption("Sealed")
-            for p in _sealed:
-                if st.checkbox(p, value=True, key=f"prod_{p}"):
-                    selected_types.append(p)
-        if _singles:
-            st.caption("Singles / Graded")
-            for p in _singles:
-                if st.checkbox(p, value=True, key=f"prod_{p}"):
-                    selected_types.append(p)
-
-    st.markdown("---")
-
-    price_metric = st.segmented_control(
-        "Price metric",
-        options=["median", "avg"],
-        default="median",
-        format_func=lambda x: "Median" if x == "median" else "Average",
-        selection_mode="single",
-    )
-    # Fallback if nothing selected
-    if not price_metric:
-        price_metric = "median"
-
-    st.markdown("---")
-    st.markdown('<p class="section-label">Dip detection</p>', unsafe_allow_html=True)
-    rolling_window = st.slider("Rolling avg window (days)", 3, 30, 7)
-    dip_threshold = st.slider("Dip threshold (%)", 1, 25, 5,
-                               help="Alert when price drops this % below rolling average")
-
-    # ── CSV export ──
-    st.markdown("---")
-
-    def _build_export_csv() -> str:
-        """Build a combined CSV of sold + active data for download."""
-        rows = []
-        for mode in ("sold", "active"):
-            csv_path = DATA_DIR / f"prices_{mode}.csv"
-            if csv_path.exists():
-                df = pd.read_csv(csv_path)
-                df.insert(0, "mode", mode)
-                rows.append(df)
-        if rows:
-            return pd.concat(rows, ignore_index=True).to_csv(index=False)
-        return ""
-
-    csv_data = _build_export_csv()
-    if csv_data:
-        st.download_button(
-            "Download CSV",
-            data=csv_data,
-            file_name=f"pokemarket_export_{datetime.now().strftime('%Y%m%d')}.csv",
-            mime="text/csv",
-            use_container_width=True,
-        )
-
-# Build selected product labels from set + type filters
-selected = []
-for s in ALL_ITEMS:
-    label = f"{s['code']} {s['product']}"
-    if s['code'] in (selected_sets or []) and s['product'] in (selected_types or []):
-        selected.append(label)
-
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# ── Shared helpers ───────────────────────────────────────────────────────────
 
 PLOTLY_LAYOUT = dict(
     plot_bgcolor="rgba(0,0,0,0)",
@@ -346,13 +202,27 @@ PLOTLY_LAYOUT = dict(
 )
 
 
-def get_set_color(label: str) -> str:
+def _get_last_updated() -> str:
+    candidates = list(DATA_DIR.glob("*prices_*.csv"))
+    latest = None
+    for p in candidates:
+        if p.exists():
+            mtime = p.stat().st_mtime
+            if latest is None or mtime > latest:
+                latest = mtime
+    if latest:
+        dt = datetime.fromtimestamp(latest)
+        return dt.strftime("%-d %b %Y at %-I:%M %p")
+    return "Never"
+
+
+def get_set_color(label: str, set_meta: dict) -> str:
     code = label.split(" ")[0]
-    return SET_META.get(code, {}).get("color", "#ffcb05")
+    return set_meta.get(code, {}).get("color", "#ffcb05")
 
 
-def load_data(mode: str) -> pd.DataFrame | None:
-    csv_path = DATA_DIR / f"prices_{mode}.csv"
+def load_data(mode: str, selected: list, prefix: str = "") -> pd.DataFrame | None:
+    csv_path = DATA_DIR / f"{prefix}prices_{mode}.csv"
     if not csv_path.exists():
         return None
     df = pd.read_csv(csv_path, parse_dates=["date"])
@@ -361,8 +231,8 @@ def load_data(mode: str) -> pd.DataFrame | None:
     return df if not df.empty else None
 
 
-def load_sales(mode: str) -> dict | None:
-    sales_path = DATA_DIR / f"sales_{mode}.json"
+def load_sales(mode: str, prefix: str = "") -> dict | None:
+    sales_path = DATA_DIR / f"{prefix}sales_{mode}.json"
     if not sales_path.exists():
         return None
     with open(sales_path) as f:
@@ -370,11 +240,6 @@ def load_sales(mode: str) -> dict | None:
 
 
 def build_date_timeline(sales_data: dict, selected_labels: list, mode: str) -> pd.DataFrame | None:
-    """Build a day-by-day price timeline from individual listing dates.
-
-    For sold mode uses the individual sold date; for active uses listing_date.
-    De-dupes by URL so listings scraped on multiple days are only counted once.
-    """
     if not sales_data:
         return None
     date_field = "date" if mode == "sold" else "listing_date"
@@ -413,17 +278,130 @@ def build_date_timeline(sales_data: dict, selected_labels: list, mode: str) -> p
     return grouped
 
 
+# ── Header ───────────────────────────────────────────────────────────────────
+
+_last_updated = _get_last_updated()
+
+with st.container():
+    st.markdown(f"""
+    <div class="header-container">
+        <div>
+            <p class="header-title">PokeMarket</p>
+            <p class="header-subtitle">TCG Price Tracker &mdash; eBay Australia &mdash; Buy the Dip</p>
+            <p style="color:#666; font-size:0.75rem; margin:0.2rem 0 0 0;">Last updated: {_last_updated}</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# JS to pin the header as sticky
+import streamlit.components.v1 as _components
+_components.html("""
+<script>
+(function() {
+    function applySticky() {
+        const doc = window.parent.document;
+        const header = doc.querySelector('.header-title');
+        if (!header) return false;
+        let el = header;
+        while (el) {
+            if (el.getAttribute && el.getAttribute('data-testid') === 'stLayoutWrapper') {
+                el.classList.add('sticky-filter-bar');
+                return true;
+            }
+            el = el.parentElement;
+        }
+        return false;
+    }
+    if (!applySticky()) {
+        const obs = new MutationObserver(() => { if (applySticky()) obs.disconnect(); });
+        obs.observe(window.parent.document.body, {childList: true, subtree: true});
+        setTimeout(() => obs.disconnect(), 10000);
+    }
+})();
+</script>
+""", height=0)
+
+# ── Sidebar ──────────────────────────────────────────────────────────────────
+
+with st.sidebar:
+    st.markdown("### Controls")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Refresh Pokemon", type="primary", use_container_width=True):
+            with st.spinner("Scraping Pokemon..."):
+                results = run_pokemon_scraper()
+            if results:
+                st.success(f"Updated {len(results)} products!")
+                st.rerun()
+            else:
+                st.error("No data — try again shortly.")
+    with col2:
+        if st.button("Refresh One Piece", type="primary", use_container_width=True):
+            with st.spinner("Scraping One Piece..."):
+                results = run_op_scraper()
+            if results:
+                st.success(f"Updated {len(results)} products!")
+                st.rerun()
+            else:
+                st.error("No data — try again shortly.")
+
+    st.markdown("---")
+
+    price_metric = st.segmented_control(
+        "Price metric",
+        options=["median", "avg"],
+        default="median",
+        format_func=lambda x: "Median" if x == "median" else "Average",
+        selection_mode="single",
+    )
+    if not price_metric:
+        price_metric = "median"
+
+    st.markdown("---")
+    st.markdown('<p class="section-label">Dip detection</p>', unsafe_allow_html=True)
+    rolling_window = st.slider("Rolling avg window (days)", 3, 30, 7)
+    dip_threshold = st.slider("Dip threshold (%)", 1, 25, 5,
+                               help="Alert when price drops this % below rolling average")
+
+    st.markdown("---")
+
+    def _build_export_csv() -> str:
+        rows = []
+        for prefix, game in [("", "Pokemon"), ("op_", "One Piece")]:
+            for mode in ("sold", "active"):
+                csv_path = DATA_DIR / f"{prefix}prices_{mode}.csv"
+                if csv_path.exists():
+                    df = pd.read_csv(csv_path)
+                    df.insert(0, "game", game)
+                    df.insert(1, "mode", mode)
+                    rows.append(df)
+        if rows:
+            return pd.concat(rows, ignore_index=True).to_csv(index=False)
+        return ""
+
+    csv_data = _build_export_csv()
+    if csv_data:
+        st.download_button(
+            "Download CSV",
+            data=csv_data,
+            file_name=f"pokemarket_export_{datetime.now().strftime('%Y%m%d')}.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+
 # ── Panel renderer ───────────────────────────────────────────────────────────
 
-def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
+def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
+                 selected: list, set_meta: dict, game_key: str, data_prefix: str):
     metric_label = "Median" if price_metric == "median" else "Average"
     mode_label = "Sold" if mode == "sold" else "Active"
-    accent = "#ffcb05" if mode == "sold" else "#4fc3f7"
 
     latest_date = df["date"].max()
     latest = df[df["date"] == latest_date].sort_values(price_metric, ascending=False)
 
-    # ── Metrics
+    # Metrics
     cols = st.columns(4)
     with cols[0]:
         st.metric("Products", len(latest))
@@ -440,9 +418,9 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
             st.metric("Lowest", f"${bot[price_metric]:.2f}",
                       help=f"{bot['code']} {bot['product']}")
 
-    # ── Deals (active tab only)
+    # Deals (active tab only)
     if mode == "active":
-        sold_df = load_data("sold")
+        sold_df = load_data("sold", selected, data_prefix)
         if sold_df is not None:
             sold_latest = sold_df[sold_df["date"] == sold_df["date"].max()]
             deals = []
@@ -469,7 +447,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
                     </div>
                     """, unsafe_allow_html=True)
 
-    # ── Dip alerts (sold tab only)
+    # Dip alerts (sold tab only)
     if mode == "sold" and df["date"].nunique() >= rolling_window:
         dips = []
         for label in df["label"].unique():
@@ -496,10 +474,10 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
                 </div>
                 """, unsafe_allow_html=True)
 
-    # ── Bar chart — latest snapshot
+    # Bar chart
     st.markdown("")
     bar_data = latest[["label", price_metric]].sort_values(price_metric, ascending=False).copy()
-    bar_data["color"] = bar_data["label"].apply(get_set_color)
+    bar_data["color"] = bar_data["label"].apply(lambda l: get_set_color(l, set_meta))
 
     fig_bar = go.Figure()
     fig_bar.add_trace(go.Bar(
@@ -522,9 +500,9 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
         showlegend=False,
         height=400,
     )
-    st.plotly_chart(fig_bar, use_container_width=True, key=f"bar_{mode}")
+    st.plotly_chart(fig_bar, use_container_width=True, key=f"bar_{game_key}_{mode}")
 
-    # ── Date-based price timeline (uses individual listing dates for rich history)
+    # Date-based price timeline
     timeline_df = build_date_timeline(sales_data, selected, mode)
     if timeline_df is not None and not timeline_df.empty:
         st.markdown(
@@ -534,8 +512,8 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
         fig_timeline = go.Figure()
         for label in sorted(timeline_df["label"].unique()):
             prod_data = timeline_df[timeline_df["label"] == label].sort_values("date")
-            color = get_set_color(label)
-            metric_col = price_metric  # "median" or "avg"
+            color = get_set_color(label, set_meta)
+            metric_col = price_metric
             fig_timeline.add_trace(go.Scatter(
                 x=prod_data["date"],
                 y=prod_data[metric_col],
@@ -569,16 +547,16 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
             hovermode="closest",
             height=430,
         )
-        st.plotly_chart(fig_timeline, use_container_width=True, key=f"timeline_{mode}")
+        st.plotly_chart(fig_timeline, use_container_width=True, key=f"timeline_{game_key}_{mode}")
     else:
         if mode == "sold":
             st.info("Sold date timeline will appear once listings with individual dates have been scraped.")
 
-    # ── Scrape-date snapshot trend (shows how collected data evolves day-to-day)
+    # Snapshot trend (if multiple scrape dates)
     if df["date"].nunique() > 1:
         with st.expander("Snapshot trend — price by scrape date", expanded=False):
             pivot = df.pivot_table(index="date", columns="label", values=price_metric)
-            colors = [get_set_color(c) for c in pivot.columns]
+            colors = [get_set_color(c, set_meta) for c in pivot.columns]
 
             fig_line = go.Figure()
             for i, col in enumerate(pivot.columns):
@@ -598,12 +576,12 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
                 hovermode="x unified",
                 height=380,
             )
-            st.plotly_chart(fig_line, use_container_width=True, key=f"line_{mode}")
+            st.plotly_chart(fig_line, use_container_width=True, key=f"line_{game_key}_{mode}")
 
-    # ── Volatility table (sold only)
+    # Volatility table (sold only)
     if mode == "sold" and df["date"].nunique() > 1:
         with st.expander("Volatility & day-over-day change", expanded=False):
-            rows = []
+            vol_rows = []
             for label in df["label"].unique():
                 prod_df = df[df["label"] == label].sort_values("date")
                 if len(prod_df) < 2:
@@ -614,7 +592,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
                 day_change = ((current - prev) / prev) * 100 if prev else 0
                 std_dev = prices.std()
                 volatility = (std_dev / prices.mean()) * 100 if prices.mean() else 0
-                rows.append({
+                vol_rows.append({
                     "Product": label,
                     "Current ($)": current,
                     "Prev ($)": prev,
@@ -623,8 +601,8 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
                     "High ($)": prices.max(),
                     "Vol (%)": round(volatility, 1),
                 })
-            if rows:
-                vol_df = pd.DataFrame(rows)
+            if vol_rows:
+                vol_df = pd.DataFrame(vol_rows)
                 st.dataframe(
                     vol_df.style.format({
                         "Current ($)": "${:.2f}", "Prev ($)": "${:.2f}",
@@ -638,7 +616,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
                     use_container_width=True, hide_index=True,
                 )
 
-    # ── Detailed breakdown
+    # Detailed breakdown
     with st.expander(f"Detailed breakdown — all {mode_label.lower()} data", expanded=True):
         display_df = latest[["code", "name", "product", "median", "avg", "low", "high", "count"]].reset_index(drop=True)
         count_label = "Sales" if mode == "sold" else "Listings"
@@ -651,7 +629,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
             use_container_width=True, hide_index=True,
         )
 
-    # ── Individual listings — sortable dataframe with eBay links
+    # Individual listings
     with st.expander(f"Individual {mode_label.lower()} listings — click any column header to sort", expanded=False):
         if sales_data:
             latest_sales_date = max(sales_data.keys()) if sales_data else None
@@ -659,12 +637,11 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
                 day_sales = sales_data[latest_sales_date]
                 available = sorted([p for p in day_sales.keys() if p in selected])
                 if available:
-                    pick = st.selectbox("Product", options=available, key=f"sales_{mode}",
+                    pick = st.selectbox("Product", options=available, key=f"sales_{game_key}_{mode}",
                                         label_visibility="collapsed")
                     if pick and pick in day_sales:
                         listings = day_sales[pick]
                         if listings:
-                            # Build DataFrame
                             df_rows = []
                             for lst in listings:
                                 row: dict = {
@@ -673,14 +650,12 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
                                     "Link": lst.get("url", ""),
                                 }
                                 if mode == "sold":
-                                    # Sold mode: date + seller info available from eBay
                                     row["Sold"] = lst.get("date", "—")
                                     row["Seller"] = lst.get("seller", "—")
                                     row["Feedback"] = lst.get("feedback", "—")
                                 df_rows.append(row)
 
                             list_df = pd.DataFrame(df_rows).sort_values("Price (AUD)")
-                            # Convert Feedback to numeric for proper sorting
                             if "Feedback" in list_df.columns:
                                 list_df["Feedback"] = pd.to_numeric(list_df["Feedback"], errors="coerce").fillna(0).astype(int)
                             col_config: dict = {
@@ -708,71 +683,105 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str):
             else:
                 st.info("No listing data yet.")
         else:
-            st.info("No listing data yet. Click Refresh Prices.")
+            st.info("No listing data yet. Click Refresh in the sidebar.")
+
+
+# ── Game tab renderer ────────────────────────────────────────────────────────
+
+def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str):
+    set_codes = list(set_meta.keys())
+    set_options = {c: f"{c} — {set_meta[c]['name']}" for c in set_codes}
+
+    selected_sets = st.pills(
+        "Sets",
+        options=set_codes,
+        default=set_codes,
+        selection_mode="multi",
+        format_func=lambda c: set_options[c],
+        key=f"{game_key}_sets",
+    )
+
+    # Build selected product labels
+    selected = []
+    for s in all_items:
+        label = f"{s['code']} {s['product']}"
+        if s['code'] in (selected_sets or []):
+            selected.append(label)
+
+    # Load data
+    sold_df = load_data("sold", selected, data_prefix)
+    active_df = load_data("active", selected, data_prefix)
+
+    if sold_df is None and active_df is None:
+        st.info("No data yet. Click the Refresh button in the sidebar to scrape eBay.")
+        return
+
+    # Sold vs Active comparison table
+    if sold_df is not None and active_df is not None:
+        sold_latest = sold_df[sold_df["date"] == sold_df["date"].max()]
+        active_latest = active_df[active_df["date"] == active_df["date"].max()]
+
+        merged = sold_latest[["label", price_metric]].merge(
+            active_latest[["label", price_metric]],
+            on="label", suffixes=("_sold", "_active"),
+        )
+        if not merged.empty:
+            merged["discount"] = ((merged[f"{price_metric}_sold"] - merged[f"{price_metric}_active"])
+                                   / merged[f"{price_metric}_sold"] * 100)
+            merged = merged.sort_values("discount", ascending=False)
+
+            comp_df = merged[["label", f"{price_metric}_sold", f"{price_metric}_active", "discount"]].copy()
+            comp_df.columns = ["Product", "Sold (AUD)", "Active (AUD)", "Discount (%)"]
+
+            def _color_discount(val):
+                if not isinstance(val, (int, float)):
+                    return ""
+                return "color: #4caf50; font-weight: 600" if val > 0 else (
+                    "color: #f44336; font-weight: 600" if val < 0 else ""
+                )
+
+            def _fmt_discount(val):
+                if not isinstance(val, (int, float)):
+                    return val
+                return f"+{val:.1f}%" if val > 0 else f"{val:.1f}%"
+
+            st.dataframe(
+                comp_df.style
+                    .format({"Sold (AUD)": "${:.2f}", "Active (AUD)": "${:.2f}", "Discount (%)": _fmt_discount})
+                    .map(_color_discount, subset=["Discount (%)"]),
+                use_container_width=True,
+                hide_index=True,
+            )
+            st.caption("Green = active listed below sold value (potential deal) | Red = active at premium over sold | Click any column header to sort")
+            st.markdown("")
+
+    # Sold / Active sub-tabs
+    tab_sold, tab_active = st.tabs(["Sold Prices", "Active Listings"])
+
+    with tab_sold:
+        if sold_df is not None:
+            render_panel(sold_df, load_sales("sold", data_prefix), "sold",
+                        selected, set_meta, game_key, data_prefix)
+        else:
+            st.info("No sold data yet. Click Refresh in the sidebar.")
+
+    with tab_active:
+        if active_df is not None:
+            render_panel(active_df, load_sales("active", data_prefix), "active",
+                        selected, set_meta, game_key, data_prefix)
+        else:
+            st.info("No active listing data yet. Click Refresh in the sidebar.")
 
 
 # ── Main content ─────────────────────────────────────────────────────────────
 
-sold_df = load_data("sold")
-active_df = load_data("active")
+tab_pokemon, tab_onepiece = st.tabs(["Pokemon", "One Piece"])
 
-if sold_df is None and active_df is None:
-    st.info("No data yet. Click **Refresh Prices** in the sidebar to scrape eBay for the first time.")
-    st.stop()
+with tab_pokemon:
+    render_game("poke", POKE_SET_META, POKE_SETS + POKE_SINGLES, "")
 
-# ── Sold vs Active comparison — sortable dataframe
-if sold_df is not None and active_df is not None:
-    sold_latest = sold_df[sold_df["date"] == sold_df["date"].max()]
-    active_latest = active_df[active_df["date"] == active_df["date"].max()]
-
-    merged = sold_latest[["label", price_metric]].merge(
-        active_latest[["label", price_metric]],
-        on="label", suffixes=("_sold", "_active"),
-    )
-    if not merged.empty:
-        merged["discount"] = ((merged[f"{price_metric}_sold"] - merged[f"{price_metric}_active"])
-                               / merged[f"{price_metric}_sold"] * 100)
-        merged = merged.sort_values("discount", ascending=False)
-
-        comp_df = merged[["label", f"{price_metric}_sold", f"{price_metric}_active", "discount"]].copy()
-        comp_df.columns = ["Product", "Sold (AUD)", "Active (AUD)", "Discount (%)"]
-
-        def _color_discount(val):
-            if not isinstance(val, (int, float)):
-                return ""
-            return "color: #4caf50; font-weight: 600" if val > 0 else (
-                "color: #f44336; font-weight: 600" if val < 0 else ""
-            )
-
-        def _fmt_discount(val):
-            if not isinstance(val, (int, float)):
-                return val
-            return f"+{val:.1f}%" if val > 0 else f"{val:.1f}%"
-
-        st.dataframe(
-            comp_df.style
-                .format({"Sold (AUD)": "${:.2f}", "Active (AUD)": "${:.2f}", "Discount (%)": _fmt_discount})
-                .map(_color_discount, subset=["Discount (%)"]),
-            use_container_width=True,
-            hide_index=True,
-        )
-        st.caption("Green = active listed below sold value (potential deal) | Red = active at premium over sold | Click any column header to sort")
-        st.markdown("")
-
-# ── Tabs
-tab_sold, tab_active = st.tabs(["Sold Prices", "Active Listings"])
-
-with tab_sold:
-    if sold_df is not None:
-        render_panel(sold_df, load_sales("sold"), "sold")
-    else:
-        st.info("No sold data yet. Click Refresh Prices.")
-
-with tab_active:
-    if active_df is not None:
-        render_panel(active_df, load_sales("active"), "active")
-    else:
-        st.info("No active listing data yet. Click Refresh Prices.")
+with tab_onepiece:
+    render_game("op", OP_SET_META, OP_SETS, "op_")
 
 # ── Footer
 st.markdown("---")
