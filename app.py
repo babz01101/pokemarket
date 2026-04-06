@@ -13,15 +13,84 @@ from pathlib import Path
 import json
 from datetime import datetime
 
-try:
-    from scraper import (run as run_pokemon_scraper, run_sealed as run_poke_sealed,
-                         run_singles as run_poke_singles, SETS as POKE_SETS, SINGLES as POKE_SINGLES)
-    from scraper_onepiece import (run as run_op_scraper, run_sealed as run_op_sealed,
-                                  SETS as OP_SETS)
-except Exception:
-    # Fallback if scraper dependencies fail on cloud
-    run_pokemon_scraper = run_poke_sealed = run_poke_singles = run_op_scraper = run_op_sealed = None
-    POKE_SETS = POKE_SINGLES = OP_SETS = []
+# ── Lazy scraper imports (only when refresh buttons are clicked) ──────────────
+# This avoids ImportError on Streamlit Cloud where scraping isn't needed.
+
+def _run_poke_sealed():
+    from scraper import run_sealed
+    return run_sealed()
+
+def _run_poke_singles():
+    from scraper import run_singles
+    return run_singles()
+
+def _run_op_sealed():
+    from scraper_onepiece import run_sealed
+    return run_sealed()
+
+# Set definitions are duplicated here so app.py has zero scraper dependencies.
+# Keep in sync with scraper.py / scraper_onepiece.py when adding new sets.
+
+POKE_SETS = [
+    {"code": "ME01",  "product": "Booster Box"},
+    {"code": "ME01",  "product": "ETB"},
+    {"code": "ME02",  "product": "Booster Box"},
+    {"code": "ME02",  "product": "ETB"},
+    {"code": "ME2.5", "product": "Booster Box"},
+    {"code": "ME2.5", "product": "ETB"},
+    {"code": "ME03",  "product": "Booster Box"},
+    {"code": "ME03",  "product": "ETB"},
+    {"code": "ME03",  "product": "Booster Bundle"},
+    {"code": "ME03",  "product": "PC ETB"},
+    {"code": "SV01",  "product": "Booster Box"},
+    {"code": "SV01",  "product": "ETB"},
+    {"code": "SV02",  "product": "Booster Box"},
+    {"code": "SV02",  "product": "ETB"},
+    {"code": "SV03",  "product": "Booster Box"},
+    {"code": "SV03",  "product": "ETB"},
+    {"code": "SV04",  "product": "Booster Box"},
+    {"code": "SV04",  "product": "ETB"},
+    {"code": "SV05",  "product": "Booster Box"},
+    {"code": "SV05",  "product": "ETB"},
+    {"code": "SV06",  "product": "Booster Box"},
+    {"code": "SV06",  "product": "ETB"},
+    {"code": "SV07",  "product": "Booster Box"},
+    {"code": "SV07",  "product": "ETB"},
+    {"code": "SV08",  "product": "Booster Box"},
+    {"code": "SV08",  "product": "ETB"},
+    {"code": "SV09",  "product": "Booster Box"},
+    {"code": "SV09",  "product": "ETB"},
+    {"code": "SV10",  "product": "Booster Box"},
+    {"code": "SV10",  "product": "ETB"},
+    {"code": "SV11",  "product": "Booster Box"},
+    {"code": "SV3.5", "product": "ETB"},
+    {"code": "SV3.5", "product": "Booster Bundle"},
+    {"code": "SV4.5", "product": "ETB"},
+    {"code": "SV4.5", "product": "Booster Bundle"},
+]
+
+POKE_SINGLES = [
+    {"code": "PROMO", "product": "EB Games Gengar 050/088"},
+    {"code": "PROMO", "product": "Eevee SVP 173 Black Star Promo"},
+    {"code": "PROMO", "product": "Lucario VSTAR SWSH291 Black Star Promo"},
+    {"code": "PROMO", "product": "Mega Lucario ex MEP 033 Black Star Promo"},
+    {"code": "PROMO", "product": "Riolu 010 Mega Evolution ETB Promo"},
+    {"code": "PROMO", "product": "Snorlax SVP 051 Pokemon 151 ETB Promo"},
+    {"code": "PROMO", "product": "Venusaur 13 Black Star Promo"},
+    {"code": "JT",    "product": "Lillie's Clefairy ex 184/159 SIR PSA 10"},
+    {"code": "JT",    "product": "Lillie's Clefairy ex 184/159 SIR PSA 9"},
+    {"code": "JT",    "product": "Lillie's Clefairy ex 184/159 SIR Raw"},
+    {"code": "SV10",  "product": "Team Rocket's Mewtwo ex 231/182 SIR PSA 10"},
+    {"code": "SV10",  "product": "Team Rocket's Mewtwo ex 231/182 SIR PSA 9"},
+    {"code": "SV10",  "product": "Team Rocket's Mewtwo ex 231/182 SIR Raw"},
+]
+
+OP_SETS = [
+    {"code": c, "product": "Booster Box"}
+    for c in ["OP-01","OP-02","OP-03","OP-04","OP-05","OP-06","OP-07","OP-08",
+              "OP-09","OP-10","OP-11","OP-12","OP-13","OP-14","OP-15","OP-16",
+              "EB-01","EB-02","EB-03","PRB-01","PRB-02"]
+]
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -1161,15 +1230,15 @@ tab_poke_sealed, tab_poke_singles, tab_op_sealed, tab_op_singles = st.tabs([
 
 with tab_poke_sealed:
     render_game("poke_sealed", POKE_SET_META, POKE_SETS, "", POKE_SEALED_CATEGORIES,
-                refresh_fn=run_poke_sealed, refresh_label="Pokemon Sealed")
+                refresh_fn=_run_poke_sealed, refresh_label="Pokemon Sealed")
 
 with tab_poke_singles:
     render_game_singles("poke_singles", POKE_SET_META, POKE_SINGLES, "", POKE_SINGLES_CATEGORIES,
-                        refresh_fn=run_poke_singles, refresh_label="Pokemon Singles")
+                        refresh_fn=_run_poke_singles, refresh_label="Pokemon Singles")
 
 with tab_op_sealed:
     render_game("op_sealed", OP_SET_META, OP_SETS, "op_", OP_SEALED_CATEGORIES,
-                refresh_fn=run_op_sealed, refresh_label="One Piece Sealed")
+                refresh_fn=_run_op_sealed, refresh_label="One Piece Sealed")
 
 with tab_op_singles:
     st.info("One Piece singles tracking coming soon. Add singles to scraper_onepiece.py to get started.")
