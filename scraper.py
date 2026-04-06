@@ -727,19 +727,22 @@ def save_sales(all_sales: dict[str, list[dict]], mode: str = "sold"):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
-def _scrape_mode(session: requests.Session, sold: bool) -> tuple[list[dict], dict[str, list[dict]]]:
-    """Scrape all sets for one mode (sold or active)."""
+def _scrape_mode(session: requests.Session, sold: bool,
+                 items: list | None = None) -> tuple[list[dict], dict[str, list[dict]]]:
+    """Scrape a list of items for one mode (sold or active)."""
+    if items is None:
+        items = SETS + SINGLES
     mode = "sold" if sold else "active"
     results = []
     all_sales: dict[str, list[dict]] = {}
 
-    for i, set_info in enumerate(SETS + SINGLES):
+    for i, set_info in enumerate(items):
         stats, listings = scrape_set(session, set_info, sold=sold)
         if stats:
             results.append(stats)
             label = f"{set_info['code']} {set_info['product']}"
             all_sales[label] = listings
-        if i < len(SETS) - 1:
+        if i < len(items) - 1:
             delay = random.uniform(1.5, 4.0)
             time.sleep(delay)
 
@@ -750,28 +753,25 @@ def _scrape_mode(session: requests.Session, sold: bool) -> tuple[list[dict], dic
     return results, all_sales
 
 
-def run():
+def _run_items(items: list, label: str = "PokeMarket") -> list[dict]:
+    """Run scraper for a specific list of items."""
     print("=" * 55)
-    print("  PokeMarket Scraper — eBay Australia")
+    print(f"  {label} Scraper — eBay Australia")
     print("=" * 55)
 
     session = get_session()
 
-    # ── Sold listings ──
     print("\n--- SOLD LISTINGS ---")
-    sold_results, _ = _scrape_mode(session, sold=True)
+    sold_results, _ = _scrape_mode(session, sold=True, items=items)
 
-    # Brief pause between modes
     time.sleep(random.uniform(3.0, 6.0))
 
-    # ── Active listings ──
     print("\n--- ACTIVE LISTINGS ---")
-    active_results, _ = _scrape_mode(session, sold=False)
+    active_results, _ = _scrape_mode(session, sold=False, items=items)
 
-    # Print summary
-    for label, results in [("SOLD", sold_results), ("ACTIVE", active_results)]:
+    for tag, results in [("SOLD", sold_results), ("ACTIVE", active_results)]:
         print(f"\n{'=' * 75}")
-        print(f"  {label}")
+        print(f"  {tag}")
         print(f"  {'Code':<8} {'Set':<25} {'Type':<20} {'Median':>10} {'Count':>6}")
         print("-" * 75)
         for r in results:
@@ -783,6 +783,21 @@ def run():
         print("  Try again in a few minutes.")
 
     return sold_results + active_results
+
+
+def run():
+    """Scrape all Pokemon products (sealed + singles)."""
+    return _run_items(SETS + SINGLES, "PokeMarket")
+
+
+def run_sealed():
+    """Scrape only Pokemon sealed products."""
+    return _run_items(SETS, "Pokemon Sealed")
+
+
+def run_singles():
+    """Scrape only Pokemon singles."""
+    return _run_items(SINGLES, "Pokemon Singles")
 
 
 if __name__ == "__main__":

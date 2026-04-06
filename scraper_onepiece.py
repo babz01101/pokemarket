@@ -246,5 +246,10 @@ def run():
     return sold_results + active_results
 
 
+def run_sealed():
+    """Alias for run() — One Piece only has sealed products for now."""
+    return run()
+
+
 if __name__ == "__main__":
     run()

@@ -13,8 +13,10 @@ from pathlib import Path
 import json
 from datetime import datetime
 
-from scraper import run as run_pokemon_scraper, SETS as POKE_SETS, SINGLES as POKE_SINGLES
-from scraper_onepiece import run as run_op_scraper, SETS as OP_SETS
+from scraper import (run as run_pokemon_scraper, run_sealed as run_poke_sealed,
+                     run_singles as run_poke_singles, SETS as POKE_SETS, SINGLES as POKE_SINGLES)
+from scraper_onepiece import (run as run_op_scraper, run_sealed as run_op_sealed,
+                              SETS as OP_SETS)
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -407,27 +409,6 @@ _components.html("""
 
 with st.sidebar:
     st.markdown("### Controls")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Refresh Pokemon", type="primary", use_container_width=True):
-            with st.spinner("Scraping Pokemon..."):
-                results = run_pokemon_scraper()
-            if results:
-                st.success(f"Updated {len(results)} products!")
-                st.rerun()
-            else:
-                st.error("No data — try again shortly.")
-    with col2:
-        if st.button("Refresh One Piece", type="primary", use_container_width=True):
-            with st.spinner("Scraping One Piece..."):
-                results = run_op_scraper()
-            if results:
-                st.success(f"Updated {len(results)} products!")
-                st.rerun()
-            else:
-                st.error("No data — try again shortly.")
-
     st.markdown("---")
 
     price_metric = st.segmented_control(
@@ -877,7 +858,20 @@ OP_SINGLES_CATEGORIES = {}  # No OP singles yet
 # ── Game tab renderer ────────────────────────────────────────────────────────
 
 def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str,
-                categories: dict | None = None):
+                categories: dict | None = None, refresh_fn=None, refresh_label: str = "Refresh"):
+    # ── Refresh button ──
+    if refresh_fn:
+        col_ref, col_space = st.columns([1, 5])
+        with col_ref:
+            if st.button(f"🔄 {refresh_label}", key=f"{game_key}_refresh", type="primary", use_container_width=True):
+                with st.spinner(f"Scraping {refresh_label}..."):
+                    results = refresh_fn()
+                if results:
+                    st.success(f"Updated {len(results)} products!")
+                    st.rerun()
+                else:
+                    st.error("No data — try again shortly.")
+
     set_codes = list(set_meta.keys())
     set_options = {c: f"{c} — {set_meta[c]['name']}" for c in set_codes}
 
@@ -1005,8 +999,21 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
 # ── Singles tab renderer (two-level: set → card) ────────────────────────────
 
 def render_game_singles(game_key: str, set_meta: dict, all_items: list, data_prefix: str,
-                        categories: dict | None = None):
+                        categories: dict | None = None, refresh_fn=None, refresh_label: str = "Refresh"):
     """Like render_game but with a two-level filter: set name → individual cards."""
+    # ── Refresh button ──
+    if refresh_fn:
+        col_ref, col_space = st.columns([1, 5])
+        with col_ref:
+            if st.button(f"🔄 {refresh_label}", key=f"{game_key}_refresh", type="primary", use_container_width=True):
+                with st.spinner(f"Scraping {refresh_label}..."):
+                    results = refresh_fn()
+                if results:
+                    st.success(f"Updated {len(results)} products!")
+                    st.rerun()
+                else:
+                    st.error("No data — try again shortly.")
+
     if not categories:
         st.info("No singles categories configured yet.")
         return
@@ -1148,13 +1155,16 @@ tab_poke_sealed, tab_poke_singles, tab_op_sealed, tab_op_singles = st.tabs([
 ])
 
 with tab_poke_sealed:
-    render_game("poke_sealed", POKE_SET_META, POKE_SETS, "", POKE_SEALED_CATEGORIES)
+    render_game("poke_sealed", POKE_SET_META, POKE_SETS, "", POKE_SEALED_CATEGORIES,
+                refresh_fn=run_poke_sealed, refresh_label="Pokemon Sealed")
 
 with tab_poke_singles:
-    render_game_singles("poke_singles", POKE_SET_META, POKE_SINGLES, "", POKE_SINGLES_CATEGORIES)
+    render_game_singles("poke_singles", POKE_SET_META, POKE_SINGLES, "", POKE_SINGLES_CATEGORIES,
+                        refresh_fn=run_poke_singles, refresh_label="Pokemon Singles")
 
 with tab_op_sealed:
-    render_game("op_sealed", OP_SET_META, OP_SETS, "op_", OP_SEALED_CATEGORIES)
+    render_game("op_sealed", OP_SET_META, OP_SETS, "op_", OP_SEALED_CATEGORIES,
+                refresh_fn=run_op_sealed, refresh_label="One Piece Sealed")
 
 with tab_op_singles:
     st.info("One Piece singles tracking coming soon. Add singles to scraper_onepiece.py to get started.")
