@@ -29,6 +29,42 @@ SINGLES = [
      "title_must": ["050", "eb games"],
      "title_must_not": ["lot", "bundle", "japanese", "korean"]},
 
+    {"name": "Promos", "code": "PROMO", "product": "Eevee SVP 173 Black Star Promo",
+     "query": "eevee svp 173 black star promo pokemon",
+     "title_must_any": ["eevee"],
+     "title_must": ["173", "promo"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean"]},
+
+    {"name": "Promos", "code": "PROMO", "product": "Lucario VSTAR SWSH291 Black Star Promo",
+     "query": "lucario vstar swsh291 black star promo pokemon",
+     "title_must_any": ["lucario"],
+     "title_must": ["swsh291"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean", "mega"]},
+
+    {"name": "Promos", "code": "PROMO", "product": "Mega Lucario ex MEP 033 Black Star Promo",
+     "query": "mega lucario ex mep 033 black star promo pokemon",
+     "title_must_any": ["lucario"],
+     "title_must": ["033", "mega"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean"]},
+
+    {"name": "Promos", "code": "PROMO", "product": "Riolu 010 Mega Evolution ETB Promo",
+     "query": "riolu 010 mega evolution etb promo pokemon",
+     "title_must_any": ["riolu"],
+     "title_must": ["010", "promo"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean"]},
+
+    {"name": "Promos", "code": "PROMO", "product": "Snorlax SVP 051 Pokemon 151 ETB Promo",
+     "query": "snorlax svp 051 pokemon 151 etb promo",
+     "title_must_any": ["snorlax"],
+     "title_must": ["051", "promo"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean"]},
+
+    {"name": "Promos", "code": "PROMO", "product": "Venusaur 13 Black Star Promo",
+     "query": "venusaur 13 black star promo pokemon",
+     "title_must_any": ["venusaur"],
+     "title_must": ["13", "promo"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean", "151", "base"]},
+
     {"name": "Journey Together", "code": "JT", "product": "Lillie's Clefairy ex 184/159 SIR PSA 10",
      "query": "lillie's clefairy ex 184 159 journey together psa 10",
      "title_must_any": ["lillie", "clefairy"],
