@@ -25,7 +25,7 @@ POKE_SET_META = {
     "ME02":  {"name": "Phantasmal Flames", "released": "Nov 2025", "color": "#e05a2b"},
     "ME2.5": {"name": "Ascended Heroes",   "released": "Jan 2026", "color": "#6356c9"},
     "ME03":  {"name": "Perfect Order",     "released": "Mar 2026", "color": "#00a88a"},
-    "PROMO": {"name": "EB Games Promos",   "released": "2026",     "color": "#c030d8"},
+    "PROMO": {"name": "Promos",             "released": "2026",     "color": "#c030d8"},
     "JT":    {"name": "Journey Together",  "released": "Mar 2025", "color": "#d8507a"},
     "SV10":  {"name": "Destined Rivals",   "released": "Apr 2025", "color": "#7b1fa2"},
     "SV01":  {"name": "Scarlet & Violet",  "released": "Mar 2023", "color": "#d32f2f"},
@@ -859,7 +859,7 @@ POKE_SEALED_CATEGORIES = {
 }
 
 POKE_SINGLES_CATEGORIES = {
-    "EB Games Promos": ["PROMO"],
+    "Promos": ["PROMO"],
     "Journey Together": ["JT"],
     "Destined Rivals": ["SV10"],
 }

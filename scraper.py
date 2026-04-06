@@ -23,7 +23,7 @@ from bs4 import BeautifulSoup
 
 # ── Singles / Promos ──
 SINGLES = [
-    {"name": "EB Games Promos", "code": "PROMO", "product": "Gengar 050/088",
+    {"name": "Promos", "code": "PROMO", "product": "EB Games Gengar 050/088",
      "query": "gengar 050 088 eb games promo stamped sealed",
      "title_must_any": ["gengar"],
      "title_must": ["050", "eb games"],
