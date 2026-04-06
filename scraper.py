@@ -65,6 +65,34 @@ SINGLES = [
      "title_must": ["13", "promo"],
      "title_must_not": ["lot", "bundle", "japanese", "korean", "151", "base"]},
 
+    # ── SV03 — Obsidian Flames singles ──
+    {"name": "Obsidian Flames", "code": "SV03", "product": "Cleffa IR 202/197",
+     "query": "cleffa 202 197 obsidian flames illustration rare pokemon",
+     "title_must_any": ["cleffa"],
+     "title_must": ["202"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean"]},
+
+    # ── SV06 — Twilight Masquerade singles ──
+    {"name": "Twilight Masquerade", "code": "SV06", "product": "Chansey IR 187/167",
+     "query": "chansey 187 167 twilight masquerade illustration rare pokemon",
+     "title_must_any": ["chansey"],
+     "title_must": ["187"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean"]},
+
+    # ── SV08 — Surging Sparks singles ──
+    {"name": "Surging Sparks", "code": "SV08", "product": "Ceruledge IR 197/191",
+     "query": "ceruledge 197 191 surging sparks illustration rare pokemon",
+     "title_must_any": ["ceruledge"],
+     "title_must": ["197"],
+     "title_must_not": ["lot", "bundle", "japanese", "korean"]},
+
+    # ── SV Promo — Detective Pikachu ──
+    {"name": "Promos", "code": "PROMO", "product": "Detective Pikachu 098/SV-P Japanese Promo",
+     "query": "detective pikachu 098 sv-p japanese promo pokemon",
+     "title_must_any": ["pikachu"],
+     "title_must": ["098", "detective"],
+     "title_must_not": ["lot", "bundle"]},
+
     {"name": "Journey Together", "code": "JT", "product": "Lillie's Clefairy ex 184/159 SIR PSA 10",
      "query": "lillie's clefairy ex 184 159 journey together psa 10",
      "title_must_any": ["lillie", "clefairy"],

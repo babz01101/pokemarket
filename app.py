@@ -77,6 +77,10 @@ POKE_SINGLES = [
     {"code": "PROMO", "product": "Riolu 010 Mega Evolution ETB Promo"},
     {"code": "PROMO", "product": "Snorlax SVP 051 Pokemon 151 ETB Promo"},
     {"code": "PROMO", "product": "Venusaur 13 Black Star Promo"},
+    {"code": "PROMO", "product": "Detective Pikachu 098/SV-P Japanese Promo"},
+    {"code": "SV03",  "product": "Cleffa IR 202/197"},
+    {"code": "SV06",  "product": "Chansey IR 187/167"},
+    {"code": "SV08",  "product": "Ceruledge IR 197/191"},
     {"code": "JT",    "product": "Lillie's Clefairy ex 184/159 SIR PSA 10"},
     {"code": "JT",    "product": "Lillie's Clefairy ex 184/159 SIR PSA 9"},
     {"code": "JT",    "product": "Lillie's Clefairy ex 184/159 SIR Raw"},
@@ -915,6 +919,7 @@ POKE_SEALED_CATEGORIES = {
 
 POKE_SINGLES_CATEGORIES = {
     "Promos": ["PROMO"],
+    "Scarlet & Violet Sets": ["SV03", "SV06", "SV08"],
     "Journey Together": ["JT"],
     "Destined Rivals": ["SV10"],
 }
