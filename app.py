@@ -21,49 +21,49 @@ DATA_DIR = Path(__file__).parent / "data"
 # ── Game metadata ──────────────────────────────────────────────────────────────
 
 POKE_SET_META = {
-    "ME01":  {"name": "Mega Evolution",    "released": "Sep 2025", "color": "#ffcb05"},
-    "ME02":  {"name": "Phantasmal Flames", "released": "Nov 2025", "color": "#ff6b35"},
-    "ME2.5": {"name": "Ascended Heroes",   "released": "Jan 2026", "color": "#7b68ee"},
-    "ME03":  {"name": "Perfect Order",     "released": "Mar 2026", "color": "#00c9a7"},
-    "PROMO": {"name": "EB Games Promos",   "released": "2026",     "color": "#e040fb"},
-    "JT":    {"name": "Journey Together",  "released": "Mar 2025", "color": "#f06292"},
-    "SV10":  {"name": "Destined Rivals",   "released": "Apr 2025", "color": "#9c27b0"},
-    "SV01":  {"name": "Scarlet & Violet",  "released": "Mar 2023", "color": "#ef5350"},
-    "SV02":  {"name": "Paldea Evolved",    "released": "Jun 2023", "color": "#66bb6a"},
-    "SV03":  {"name": "Obsidian Flames",   "released": "Aug 2023", "color": "#ff7043"},
-    "SV04":  {"name": "Paradox Rift",      "released": "Nov 2023", "color": "#ab47bc"},
-    "SV05":  {"name": "Temporal Forces",   "released": "Mar 2024", "color": "#42a5f5"},
-    "SV06":  {"name": "Twilight Masquerade", "released": "May 2024", "color": "#26c6da"},
-    "SV07":  {"name": "Stellar Crown",     "released": "Aug 2024", "color": "#ffd54f"},
-    "SV08":  {"name": "Surging Sparks",    "released": "Nov 2024", "color": "#ff8a65"},
-    "SV09":  {"name": "Journey Together",   "released": "Mar 2025", "color": "#7e57c2"},
+    "ME01":  {"name": "Mega Evolution",    "released": "Sep 2025", "color": "#d4a017"},
+    "ME02":  {"name": "Phantasmal Flames", "released": "Nov 2025", "color": "#e05a2b"},
+    "ME2.5": {"name": "Ascended Heroes",   "released": "Jan 2026", "color": "#6356c9"},
+    "ME03":  {"name": "Perfect Order",     "released": "Mar 2026", "color": "#00a88a"},
+    "PROMO": {"name": "EB Games Promos",   "released": "2026",     "color": "#c030d8"},
+    "JT":    {"name": "Journey Together",  "released": "Mar 2025", "color": "#d8507a"},
+    "SV10":  {"name": "Destined Rivals",   "released": "Apr 2025", "color": "#7b1fa2"},
+    "SV01":  {"name": "Scarlet & Violet",  "released": "Mar 2023", "color": "#d32f2f"},
+    "SV02":  {"name": "Paldea Evolved",    "released": "Jun 2023", "color": "#388e3c"},
+    "SV03":  {"name": "Obsidian Flames",   "released": "Aug 2023", "color": "#e64a19"},
+    "SV04":  {"name": "Paradox Rift",      "released": "Nov 2023", "color": "#8e24aa"},
+    "SV05":  {"name": "Temporal Forces",   "released": "Mar 2024", "color": "#1976d2"},
+    "SV06":  {"name": "Twilight Masquerade", "released": "May 2024", "color": "#00838f"},
+    "SV07":  {"name": "Stellar Crown",     "released": "Aug 2024", "color": "#c6a600"},
+    "SV08":  {"name": "Surging Sparks",    "released": "Nov 2024", "color": "#e65100"},
+    "SV09":  {"name": "Journey Together",   "released": "Mar 2025", "color": "#5e35b1"},
     "SV11":  {"name": "Black Bolt & White Flare", "released": "Jun 2025", "color": "#37474f"},
-    "SV3.5": {"name": "Pokemon 151",       "released": "Sep 2023", "color": "#e53935"},
-    "SV4.5": {"name": "Paldean Fates",     "released": "Jan 2024", "color": "#78909c"},
+    "SV3.5": {"name": "Pokemon 151",       "released": "Sep 2023", "color": "#c62828"},
+    "SV4.5": {"name": "Paldean Fates",     "released": "Jan 2024", "color": "#546e7a"},
 }
 
 OP_SET_META = {
-    "OP-01":  {"name": "Romance Dawn",             "released": "Dec 2022", "color": "#e74c3c"},
-    "OP-02":  {"name": "Paramount War",             "released": "Mar 2023", "color": "#3498db"},
-    "OP-03":  {"name": "Pillars of Strength",       "released": "Jun 2023", "color": "#e67e22"},
-    "OP-04":  {"name": "Kingdoms of Intrigue",      "released": "Sep 2023", "color": "#9b59b6"},
-    "OP-05":  {"name": "Awakening of the New Era",  "released": "Dec 2023", "color": "#f1c40f"},
-    "OP-06":  {"name": "Wings of the Captain",      "released": "Mar 2024", "color": "#1abc9c"},
-    "OP-07":  {"name": "500 Years in the Future",   "released": "Jun 2024", "color": "#2ecc71"},
-    "OP-08":  {"name": "Two Legends",               "released": "Sep 2024", "color": "#e91e63"},
-    "OP-09":  {"name": "Emperors in the New World",  "released": "Dec 2024", "color": "#3f51b5"},
-    "OP-10":  {"name": "Royal Blood",               "released": "Mar 2025", "color": "#c0392b"},
-    "OP-11":  {"name": "A Fist of Divine Speed",    "released": "Jun 2025", "color": "#27ae60"},
-    "OP-12":  {"name": "Legacy of the Master",      "released": "Sep 2025", "color": "#607d8b"},
-    "OP-13":  {"name": "Carrying on His Will",      "released": "Nov 2025", "color": "#ff7043"},
-    "OP-14":  {"name": "The Azure Sea's Seven",     "released": "Jan 2026", "color": "#00bcd4"},
-    "OP-15":  {"name": "Adventure on Kami's Island", "released": "Mar 2026", "color": "#ff8a65"},
-    "OP-16":  {"name": "The Time of Battle",        "released": "TBA",      "color": "#78909c"},
-    "EB-01":  {"name": "Memorial Collection",       "released": "2024",     "color": "#ec407a"},
-    "EB-02":  {"name": "Anime 25th Collection",     "released": "2025",     "color": "#ffb300"},
-    "EB-03":  {"name": "Heroines Edition",          "released": "2025",     "color": "#f48fb1"},
-    "PRB-01": {"name": "Card The Best",             "released": "2024",     "color": "#cd7f32"},
-    "PRB-02": {"name": "Card The Best Vol.2",       "released": "2025",     "color": "#b0bec5"},
+    "OP-01":  {"name": "Romance Dawn",             "released": "Dec 2022", "color": "#c0392b"},
+    "OP-02":  {"name": "Paramount War",             "released": "Mar 2023", "color": "#2471a3"},
+    "OP-03":  {"name": "Pillars of Strength",       "released": "Jun 2023", "color": "#d35400"},
+    "OP-04":  {"name": "Kingdoms of Intrigue",      "released": "Sep 2023", "color": "#7d3c98"},
+    "OP-05":  {"name": "Awakening of the New Era",  "released": "Dec 2023", "color": "#b7950b"},
+    "OP-06":  {"name": "Wings of the Captain",      "released": "Mar 2024", "color": "#148f77"},
+    "OP-07":  {"name": "500 Years in the Future",   "released": "Jun 2024", "color": "#1e8449"},
+    "OP-08":  {"name": "Two Legends",               "released": "Sep 2024", "color": "#c2185b"},
+    "OP-09":  {"name": "Emperors in the New World",  "released": "Dec 2024", "color": "#283593"},
+    "OP-10":  {"name": "Royal Blood",               "released": "Mar 2025", "color": "#922b21"},
+    "OP-11":  {"name": "A Fist of Divine Speed",    "released": "Jun 2025", "color": "#1b7a3d"},
+    "OP-12":  {"name": "Legacy of the Master",      "released": "Sep 2025", "color": "#455a64"},
+    "OP-13":  {"name": "Carrying on His Will",      "released": "Nov 2025", "color": "#e64a19"},
+    "OP-14":  {"name": "The Azure Sea's Seven",     "released": "Jan 2026", "color": "#00838f"},
+    "OP-15":  {"name": "Adventure on Kami's Island", "released": "Mar 2026", "color": "#d84315"},
+    "OP-16":  {"name": "The Time of Battle",        "released": "TBA",      "color": "#546e7a"},
+    "EB-01":  {"name": "Memorial Collection",       "released": "2024",     "color": "#ad1457"},
+    "EB-02":  {"name": "Anime 25th Collection",     "released": "2025",     "color": "#e68a00"},
+    "EB-03":  {"name": "Heroines Edition",          "released": "2025",     "color": "#c2185b"},
+    "PRB-01": {"name": "Card The Best",             "released": "2024",     "color": "#8d6e32"},
+    "PRB-02": {"name": "Card The Best Vol.2",       "released": "2025",     "color": "#607d8b"},
 }
 
 # ── Page config ──────────────────────────────────────────────────────────────
@@ -75,42 +75,63 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Custom styling ───────────────────────────────────────────────────────────
+# ── Light theme styling (inspired by 35mmc.com) ─────────────────────────────
 
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
     * { font-family: 'Inter', sans-serif; }
+
+    /* Force light background everywhere */
+    [data-testid="stAppViewContainer"],
+    [data-testid="stApp"],
+    .main,
+    .stApp {
+        background-color: #fafafa !important;
+        color: #313131 !important;
+    }
+
     .block-container { padding-top: 1.2rem; padding-bottom: 1rem; }
 
-    /* Sidebar */
+    /* Sidebar — clean white */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+        background: #ffffff !important;
+        border-right: 1px solid #e0e0e0 !important;
     }
-    [data-testid="stSidebar"] * { color: #e0e0f0; }
-    [data-testid="stSidebar"] hr { border-color: #2a2a4a; }
+    [data-testid="stSidebar"] * { color: #313131 !important; }
+    [data-testid="stSidebar"] hr { border-color: #e0e0e0 !important; }
+    [data-testid="stSidebar"] .stSlider label,
+    [data-testid="stSidebar"] .stSlider span { color: #555 !important; }
 
-    /* Metric cards */
+    /* Override dark text on main area */
+    .stMarkdown, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
+    .stMarkdown h4, .stMarkdown h5, .stMarkdown h6,
+    label, .stSelectbox label, .stMultiSelect label {
+        color: #313131 !important;
+    }
+
+    /* Metric cards — clean white cards with subtle shadow */
     div[data-testid="stMetric"] {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-        border: 1px solid rgba(255,203,5,0.15);
-        border-radius: 14px;
+        background: #ffffff !important;
+        border: 1px solid #e8e8e8 !important;
+        border-radius: 10px;
         padding: 1.1rem 1.2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         transition: transform 0.15s, box-shadow 0.15s;
     }
     div[data-testid="stMetric"]:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255,203,5,0.08);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
     div[data-testid="stMetric"] label {
-        color: #8888aa !important;
+        color: #888 !important;
         font-size: 0.78rem !important;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: #ffffff !important;
+        color: #313131 !important;
         font-weight: 700 !important;
     }
 
@@ -121,54 +142,58 @@ st.markdown("""
         gap: 0.8rem;
         margin-bottom: 0.5rem;
     }
-    .header-title {
-        font-size: 2.2rem;
-        font-weight: 700;
-        background: linear-gradient(135deg, #ffcb05 0%, #ff9800 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin: 0;
+    p.header-title,
+    .header-container .header-title {
+        font-size: 2.2rem !important;
+        font-weight: 700 !important;
+        color: #0693e3 !important;
+        margin: 0 !important;
+        line-height: 1.2 !important;
     }
-    .header-subtitle {
-        color: #8888aa;
-        font-size: 0.9rem;
-        margin: 0;
+    p.header-subtitle,
+    .header-container .header-subtitle {
+        color: #777 !important;
+        font-size: 0.9rem !important;
+        margin: 0 !important;
     }
 
-    /* Tabs */
+    /* Tabs — clean underline style */
     button[data-baseweb="tab"] {
         font-weight: 600;
         font-size: 0.95rem;
+        color: #555 !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #0693e3 !important;
     }
 
-    /* Alert cards */
+    /* Alert cards — light style */
     .alert-card {
-        border-radius: 12px;
+        border-radius: 10px;
         padding: 1rem 1.3rem;
         margin-bottom: 0.6rem;
-        backdrop-filter: blur(10px);
     }
     .alert-card.buy {
-        background: linear-gradient(135deg, rgba(76,175,80,0.12) 0%, rgba(76,175,80,0.05) 100%);
-        border: 1px solid rgba(76,175,80,0.3);
+        background: #f0faf0 !important;
+        border: 1px solid #c8e6c9;
     }
     .alert-card.deal {
-        background: linear-gradient(135deg, rgba(255,152,0,0.12) 0%, rgba(255,152,0,0.05) 100%);
-        border: 1px solid rgba(255,152,0,0.3);
+        background: #fff8f0 !important;
+        border: 1px solid #ffe0b2;
     }
     .alert-card h4 {
         margin: 0 0 0.25rem 0;
         font-size: 0.95rem;
         font-weight: 600;
     }
-    .alert-card.buy h4 { color: #4caf50; }
-    .alert-card.deal h4 { color: #ff9800; }
-    .alert-card p { margin: 0; color: #999; font-size: 0.88rem; }
-    .alert-card strong { color: #e0e0e0; }
+    .alert-card.buy h4 { color: #2e7d32 !important; }
+    .alert-card.deal h4 { color: #e65100 !important; }
+    .alert-card p { margin: 0; color: #666 !important; font-size: 0.88rem; }
+    .alert-card strong { color: #313131 !important; }
 
     /* Section headers */
     .section-label {
-        color: #8888aa;
+        color: #888;
         font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -181,9 +206,9 @@ st.markdown("""
         position: sticky !important;
         top: 0px !important;
         z-index: 999 !important;
-        background: #0e1117 !important;
+        background: #fafafa !important;
         padding-bottom: 0.5rem !important;
-        border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+        border-bottom: 1px solid #e0e0e0 !important;
     }
 
     /* Pills / segmented control */
@@ -199,19 +224,65 @@ st.markdown("""
         font-size: 0.82rem !important;
         font-weight: 500 !important;
     }
+
+    /* DataFrames — clean white */
+    [data-testid="stDataFrame"],
+    .stDataFrame {
+        background: #ffffff !important;
+        border-radius: 8px;
+    }
+
+    /* Expander headers */
+    [data-testid="stExpander"] summary {
+        color: #313131 !important;
+        font-weight: 500;
+    }
+
+    /* Multiselect */
+    .stMultiSelect [data-baseweb="tag"] {
+        background-color: #e3f2fd !important;
+        color: #1565c0 !important;
+    }
+
+    /* Buttons */
+    .stButton button[kind="primary"] {
+        background-color: #0693e3 !important;
+        border: none !important;
+        color: white !important;
+    }
+    .stButton button[kind="primary"]:hover {
+        background-color: #0574b8 !important;
+    }
+
+    /* Footer */
+    footer { color: #999 !important; }
+
+    /* Info boxes */
+    [data-testid="stAlert"] {
+        background: #f5f8ff !important;
+        border: 1px solid #d6e4f0 !important;
+        color: #313131 !important;
+    }
+
+    /* Download button */
+    .stDownloadButton button {
+        background: #ffffff !important;
+        border: 1px solid #d0d0d0 !important;
+        color: #313131 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # ── Shared helpers ───────────────────────────────────────────────────────────
 
 PLOTLY_LAYOUT = dict(
-    plot_bgcolor="rgba(0,0,0,0)",
-    paper_bgcolor="rgba(0,0,0,0)",
-    font=dict(family="Inter, sans-serif", size=13, color="#999"),
+    plot_bgcolor="#ffffff",
+    paper_bgcolor="#fafafa",
+    font=dict(family="Inter, sans-serif", size=13, color="#555"),
     margin=dict(t=30, b=60, l=60, r=20),
-    xaxis=dict(gridcolor="rgba(255,255,255,0.08)", zeroline=False),
-    yaxis=dict(gridcolor="rgba(255,255,255,0.15)", zeroline=False, showgrid=True),
-    legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=11)),
+    xaxis=dict(gridcolor="#eee", zeroline=False),
+    yaxis=dict(gridcolor="#ddd", zeroline=False, showgrid=True),
+    legend=dict(bgcolor="rgba(255,255,255,0.9)", font=dict(size=11, color="#313131")),
 )
 
 
@@ -231,7 +302,7 @@ def _get_last_updated() -> str:
 
 def get_set_color(label: str, set_meta: dict) -> str:
     code = label.split(" ")[0]
-    return set_meta.get(code, {}).get("color", "#ffcb05")
+    return set_meta.get(code, {}).get("color", "#0693e3")
 
 
 def load_data(mode: str, selected: list, prefix: str = "") -> pd.DataFrame | None:
@@ -296,15 +367,13 @@ def build_date_timeline(sales_data: dict, selected_labels: list, mode: str) -> p
 _last_updated = _get_last_updated()
 
 with st.container():
-    st.markdown(f"""
-    <div class="header-container">
-        <div>
-            <p class="header-title">PokeMarket</p>
-            <p class="header-subtitle">TCG Price Tracker &mdash; eBay Australia &mdash; Buy the Dip</p>
-            <p style="color:#666; font-size:0.75rem; margin:0.2rem 0 0 0;">Last updated: {_last_updated}</p>
-        </div>
+    st.html(f"""
+    <div style="margin-bottom: 0.5rem;">
+        <div style="font-size: 2.2rem; font-weight: 700; color: #0693e3; line-height: 1.2;">PokeMarket</div>
+        <div style="color: #777; font-size: 0.9rem;">TCG Price Tracker &mdash; eBay Australia &mdash; Buy the Dip</div>
+        <div style="color: #999; font-size: 0.75rem; margin-top: 0.2rem;">Last updated: {_last_updated}</div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 # JS to pin the header as sticky
 import streamlit.components.v1 as _components
@@ -437,7 +506,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
         if sold_df is not None:
             sold_latest = sold_df[sold_df["date"] == sold_df["date"].max()]
 
-            # Build lookup: product label → cheapest listing URL
+            # Build lookup: product label -> cheapest listing URL
             cheapest_listings: dict[str, list[dict]] = {}
             if sales_data:
                 latest_sales_date = max(sales_data.keys()) if sales_data else None
@@ -457,7 +526,6 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                 if sold_price > 0 and active_price < sold_price:
                     pct = ((sold_price - active_price) / sold_price) * 100
                     if pct >= 3:
-                        # Get top 3 cheapest listings for this product
                         top_listings = cheapest_listings.get(row["label"], [])[:3]
                         deals.append((row["label"], active_price, sold_price, pct, top_listings))
 
@@ -473,7 +541,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                             if url:
                                 link_items.append(
                                     f'<a href="{url}" target="_blank" '
-                                    f'style="color:#ff9800; text-decoration:none; font-size:0.82rem;">'
+                                    f'style="color:#0693e3; text-decoration:none; font-size:0.82rem;">'
                                     f'${price:.2f} &rarr;</a>'
                                 )
                         if link_items:
@@ -531,6 +599,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
         y=bar_data[price_metric],
         text=bar_data[price_metric].apply(lambda v: f"${v:.0f}"),
         textposition="outside",
+        textfont=dict(color="#313131"),
         marker=dict(
             color=bar_data["color"],
             line=dict(width=0),
@@ -557,15 +626,28 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
         )
         fig_timeline = go.Figure()
         for label in sorted(timeline_df["label"].unique()):
-            prod_data = timeline_df[timeline_df["label"] == label].sort_values("date")
+            prod_data = timeline_df[timeline_df["label"] == label].sort_values("date").reset_index(drop=True)
             color = get_set_color(label, set_meta)
             metric_col = price_metric
+
+            # Only label up to 4 key points: first, last, highest, lowest
+            key_indices = set()
+            if len(prod_data) > 0:
+                key_indices.add(0)                                    # first
+                key_indices.add(len(prod_data) - 1)                   # last
+                key_indices.add(int(prod_data[metric_col].idxmax()))   # highest
+                key_indices.add(int(prod_data[metric_col].idxmin()))   # lowest
+            text_labels = [
+                f"${v:.0f}" if i in key_indices else ""
+                for i, v in enumerate(prod_data[metric_col])
+            ]
+
             fig_timeline.add_trace(go.Scatter(
                 x=prod_data["date"],
                 y=prod_data[metric_col],
                 name=label,
                 mode="lines+markers+text",
-                text=prod_data[metric_col].apply(lambda v: f"${v:.0f}"),
+                text=text_labels,
                 textposition="top center",
                 textfont=dict(size=9, color=color),
                 line=dict(width=2.5, color=color, shape="spline", smoothing=1.2),
@@ -573,7 +655,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                     size=prod_data["count"].clip(upper=12) + 4,
                     color=color,
                     opacity=0.85,
-                    line=dict(width=1, color="rgba(0,0,0,0.3)"),
+                    line=dict(width=1, color="rgba(255,255,255,0.6)"),
                 ),
                 customdata=prod_data[["count"]].values,
                 hovertemplate=(
@@ -585,12 +667,12 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
             ))
         timeline_layout = {**PLOTLY_LAYOUT}
         timeline_layout["xaxis"] = dict(
-            gridcolor="rgba(255,255,255,0.04)",
+            gridcolor="#eee",
             zeroline=False,
             tickformat="%d %b",
         )
         timeline_layout["yaxis"] = dict(
-            gridcolor="#555555",
+            gridcolor="#ccc",
             gridwidth=1,
             griddash="dot",
             zeroline=False,
@@ -677,8 +759,8 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                         "Change (%)": "{:+.1f}%", "Low ($)": "${:.2f}",
                         "High ($)": "${:.2f}", "Vol (%)": "{:.1f}%",
                     }).map(
-                        lambda v: "color: #4caf50" if isinstance(v, (int, float)) and v < 0 else
-                                  "color: #f44336" if isinstance(v, (int, float)) and v > 0 else "",
+                        lambda v: "color: #2e7d32" if isinstance(v, (int, float)) and v < 0 else
+                                  "color: #c62828" if isinstance(v, (int, float)) and v > 0 else "",
                         subset=["Change (%)"],
                     ),
                     use_container_width=True, hide_index=True,
@@ -762,19 +844,32 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
 
 # ── Category definitions ─────────────────────────────────────────────────────
 
-POKE_CATEGORIES = {
+# Pokemon sealed categories (booster boxes, ETBs, bundles)
+POKE_SEALED_CODES = ["ME01", "ME02", "ME2.5", "ME03",
+                     "SV01", "SV02", "SV03", "SV04", "SV05", "SV06", "SV07", "SV08", "SV09", "SV10", "SV11",
+                     "SV3.5", "SV4.5"]
+
+# Pokemon singles codes
+POKE_SINGLES_CODES = ["PROMO", "JT", "SV10"]  # SV10 has both sealed and singles
+
+POKE_SEALED_CATEGORIES = {
     "Scarlet & Violet": ["SV01", "SV02", "SV03", "SV04", "SV05", "SV06", "SV07", "SV08", "SV09", "SV10", "SV11"],
     "Special Sets": ["SV3.5", "SV4.5"],
     "Mega Evolution": ["ME01", "ME02", "ME2.5", "ME03"],
-    "Singles & Promos": ["PROMO", "JT"],
 }
 
-OP_CATEGORIES = {
+POKE_SINGLES_CATEGORIES = {
+    "Singles & Promos": ["PROMO", "JT", "SV10"],
+}
+
+OP_SEALED_CATEGORIES = {
     "Main Sets": ["OP-01", "OP-02", "OP-03", "OP-04", "OP-05", "OP-06", "OP-07",
                    "OP-08", "OP-09", "OP-10", "OP-11", "OP-12", "OP-13", "OP-14", "OP-15", "OP-16"],
     "Extra Boosters": ["EB-01", "EB-02", "EB-03"],
     "Premium Boosters": ["PRB-01", "PRB-02"],
 }
+
+OP_SINGLES_CATEGORIES = {}  # No OP singles yet
 
 
 # ── Game tab renderer ────────────────────────────────────────────────────────
@@ -808,9 +903,9 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
         for i, (cat_name, cat_codes) in enumerate(categories.items()):
             valid_codes = [c for c in cat_codes if c in set_meta]
             cat_key = f"{game_key}_cat_{cat_name}"
-            # Default to all selected on first load
+            # Default to EMPTY on first load
             if cat_key not in st.session_state:
-                st.session_state[cat_key] = valid_codes
+                st.session_state[cat_key] = []
 
             with cols[i]:
                 chosen = st.multiselect(
@@ -821,9 +916,9 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
                 )
                 selected_sets.extend(chosen)
     else:
-        # Fallback: simple pills
+        # Fallback: simple pills (default empty)
         selected_sets = st.pills(
-            "Sets", options=set_codes, default=set_codes,
+            "Sets", options=set_codes, default=[],
             selection_mode="multi",
             format_func=lambda c: set_options[c],
             key=f"{game_key}_sets",
@@ -836,12 +931,16 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
         if s['code'] in (selected_sets or []):
             selected.append(label)
 
+    if not selected:
+        st.info("Select one or more sets above to view price data.")
+        return
+
     # Load data
     sold_df = load_data("sold", selected, data_prefix)
     active_df = load_data("active", selected, data_prefix)
 
     if sold_df is None and active_df is None:
-        st.info("No data yet. Click the Refresh button in the sidebar to scrape eBay.")
+        st.info("No data yet for the selected sets. Click the Refresh button in the sidebar to scrape eBay.")
         return
 
     # Sold vs Active comparison table
@@ -864,8 +963,8 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
             def _color_discount(val):
                 if not isinstance(val, (int, float)):
                     return ""
-                return "color: #4caf50; font-weight: 600" if val > 0 else (
-                    "color: #f44336; font-weight: 600" if val < 0 else ""
+                return "color: #2e7d32; font-weight: 600" if val > 0 else (
+                    "color: #c62828; font-weight: 600" if val < 0 else ""
                 )
 
             def _fmt_discount(val):
@@ -903,18 +1002,26 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
 
 # ── Main content ─────────────────────────────────────────────────────────────
 
-tab_pokemon, tab_onepiece = st.tabs(["Pokemon", "One Piece"])
+tab_poke_sealed, tab_poke_singles, tab_op_sealed, tab_op_singles = st.tabs([
+    "Pokemon Sealed", "Pokemon Singles", "One Piece Sealed", "One Piece Singles"
+])
 
-with tab_pokemon:
-    render_game("poke", POKE_SET_META, POKE_SETS + POKE_SINGLES, "", POKE_CATEGORIES)
+with tab_poke_sealed:
+    render_game("poke_sealed", POKE_SET_META, POKE_SETS, "", POKE_SEALED_CATEGORIES)
 
-with tab_onepiece:
-    render_game("op", OP_SET_META, OP_SETS, "op_", OP_CATEGORIES)
+with tab_poke_singles:
+    render_game("poke_singles", POKE_SET_META, POKE_SINGLES, "", POKE_SINGLES_CATEGORIES)
+
+with tab_op_sealed:
+    render_game("op_sealed", OP_SET_META, OP_SETS, "op_", OP_SEALED_CATEGORIES)
+
+with tab_op_singles:
+    st.info("One Piece singles tracking coming soon. Add singles to scraper_onepiece.py to get started.")
 
 # ── Footer
 st.markdown("---")
 st.markdown(
-    '<p style="color:#555; font-size:0.75rem; text-align:center;">'
+    '<p style="color:#999; font-size:0.75rem; text-align:center;">'
     'Data sourced from eBay Australia &bull; Prices in AUD &bull; English listings only &bull; AU sellers only</p>',
     unsafe_allow_html=True,
 )
