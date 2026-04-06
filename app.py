@@ -13,10 +13,15 @@ from pathlib import Path
 import json
 from datetime import datetime
 
-from scraper import (run as run_pokemon_scraper, run_sealed as run_poke_sealed,
-                     run_singles as run_poke_singles, SETS as POKE_SETS, SINGLES as POKE_SINGLES)
-from scraper_onepiece import (run as run_op_scraper, run_sealed as run_op_sealed,
-                              SETS as OP_SETS)
+try:
+    from scraper import (run as run_pokemon_scraper, run_sealed as run_poke_sealed,
+                         run_singles as run_poke_singles, SETS as POKE_SETS, SINGLES as POKE_SINGLES)
+    from scraper_onepiece import (run as run_op_scraper, run_sealed as run_op_sealed,
+                                  SETS as OP_SETS)
+except Exception:
+    # Fallback if scraper dependencies fail on cloud
+    run_pokemon_scraper = run_poke_sealed = run_poke_singles = run_op_scraper = run_op_sealed = None
+    POKE_SETS = POKE_SINGLES = OP_SETS = []
 
 DATA_DIR = Path(__file__).parent / "data"
 
