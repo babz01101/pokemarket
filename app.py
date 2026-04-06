@@ -859,7 +859,9 @@ POKE_SEALED_CATEGORIES = {
 }
 
 POKE_SINGLES_CATEGORIES = {
-    "Singles & Promos": ["PROMO", "JT", "SV10"],
+    "EB Games Promos": ["PROMO"],
+    "Journey Together": ["JT"],
+    "Destined Rivals": ["SV10"],
 }
 
 OP_SEALED_CATEGORIES = {
@@ -1000,6 +1002,145 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
             st.info("No active listing data yet. Click Refresh in the sidebar.")
 
 
+# ── Singles tab renderer (two-level: set → card) ────────────────────────────
+
+def render_game_singles(game_key: str, set_meta: dict, all_items: list, data_prefix: str,
+                        categories: dict | None = None):
+    """Like render_game but with a two-level filter: set name → individual cards."""
+    if not categories:
+        st.info("No singles categories configured yet.")
+        return
+
+    set_options = {c: f"{c} — {set_meta[c]['name']}" for c in set_meta}
+
+    # ── Level 1: Set selector ──
+    st.markdown('<p class="section-label">Select set</p>', unsafe_allow_html=True)
+
+    # Build set-level options from categories
+    all_set_codes = []
+    for cat_codes in categories.values():
+        all_set_codes.extend(cat_codes)
+
+    col_btn1, col_btn2, col_spacer = st.columns([1, 1, 4])
+    with col_btn1:
+        if st.button("Select All", key=f"{game_key}_select_all", use_container_width=True):
+            st.session_state[f"{game_key}_sets"] = all_set_codes
+            # Also select all cards for each set
+            for code in all_set_codes:
+                cards = [s["product"] for s in all_items if s["code"] == code]
+                st.session_state[f"{game_key}_cards_{code}"] = cards
+            st.rerun()
+    with col_btn2:
+        if st.button("Deselect All", key=f"{game_key}_deselect_all", use_container_width=True):
+            st.session_state[f"{game_key}_sets"] = []
+            for code in all_set_codes:
+                st.session_state[f"{game_key}_cards_{code}"] = []
+            st.rerun()
+
+    if f"{game_key}_sets" not in st.session_state:
+        st.session_state[f"{game_key}_sets"] = []
+
+    selected_sets = st.multiselect(
+        "Sets",
+        options=all_set_codes,
+        format_func=lambda c: set_options.get(c, c),
+        key=f"{game_key}_sets",
+        label_visibility="collapsed",
+    )
+
+    if not selected_sets:
+        st.info("Select one or more sets above to view singles data.")
+        return
+
+    # ── Level 2: Card selector per set ──
+    st.markdown('<p class="section-label">Select cards</p>', unsafe_allow_html=True)
+    cols = st.columns(len(selected_sets))
+    selected_labels = []
+
+    for i, code in enumerate(selected_sets):
+        cards_for_set = [s["product"] for s in all_items if s["code"] == code]
+        card_key = f"{game_key}_cards_{code}"
+        if card_key not in st.session_state:
+            st.session_state[card_key] = []
+
+        with cols[i]:
+            chosen_cards = st.multiselect(
+                set_options.get(code, code),
+                options=cards_for_set,
+                key=card_key,
+            )
+            for card in chosen_cards:
+                selected_labels.append(f"{code} {card}")
+
+    if not selected_labels:
+        st.info("Select one or more cards above to view price data.")
+        return
+
+    # Load data
+    sold_df = load_data("sold", selected_labels, data_prefix)
+    active_df = load_data("active", selected_labels, data_prefix)
+
+    if sold_df is None and active_df is None:
+        st.info("No data yet for the selected cards. Click the Refresh button in the sidebar to scrape eBay.")
+        return
+
+    # Sold vs Active comparison table
+    if sold_df is not None and active_df is not None:
+        sold_latest = sold_df[sold_df["date"] == sold_df["date"].max()]
+        active_latest = active_df[active_df["date"] == active_df["date"].max()]
+
+        merged = sold_latest[["label", price_metric]].merge(
+            active_latest[["label", price_metric]],
+            on="label", suffixes=("_sold", "_active"),
+        )
+        if not merged.empty:
+            merged["discount"] = ((merged[f"{price_metric}_sold"] - merged[f"{price_metric}_active"])
+                                   / merged[f"{price_metric}_sold"] * 100)
+            merged = merged.sort_values("discount", ascending=False)
+
+            comp_df = merged[["label", f"{price_metric}_sold", f"{price_metric}_active", "discount"]].copy()
+            comp_df.columns = ["Product", "Sold (AUD)", "Active (AUD)", "Discount (%)"]
+
+            def _color_discount(val):
+                if not isinstance(val, (int, float)):
+                    return ""
+                return "color: #2e7d32; font-weight: 600" if val > 0 else (
+                    "color: #c62828; font-weight: 600" if val < 0 else ""
+                )
+
+            def _fmt_discount(val):
+                if not isinstance(val, (int, float)):
+                    return val
+                return f"+{val:.1f}%" if val > 0 else f"{val:.1f}%"
+
+            st.dataframe(
+                comp_df.style
+                    .format({"Sold (AUD)": "${:.2f}", "Active (AUD)": "${:.2f}", "Discount (%)": _fmt_discount})
+                    .map(_color_discount, subset=["Discount (%)"]),
+                use_container_width=True,
+                hide_index=True,
+            )
+            st.caption("Green = active listed below sold value (potential deal) | Red = active at premium over sold")
+            st.markdown("")
+
+    # Sold / Active sub-tabs
+    tab_sold, tab_active = st.tabs(["Sold Prices", "Active Listings"])
+
+    with tab_sold:
+        if sold_df is not None:
+            render_panel(sold_df, load_sales("sold", data_prefix), "sold",
+                        selected_labels, set_meta, game_key, data_prefix)
+        else:
+            st.info("No sold data yet. Click Refresh in the sidebar.")
+
+    with tab_active:
+        if active_df is not None:
+            render_panel(active_df, load_sales("active", data_prefix), "active",
+                        selected_labels, set_meta, game_key, data_prefix)
+        else:
+            st.info("No active listing data yet. Click Refresh in the sidebar.")
+
+
 # ── Main content ─────────────────────────────────────────────────────────────
 
 tab_poke_sealed, tab_poke_singles, tab_op_sealed, tab_op_singles = st.tabs([
@@ -1010,7 +1151,7 @@ with tab_poke_sealed:
     render_game("poke_sealed", POKE_SET_META, POKE_SETS, "", POKE_SEALED_CATEGORIES)
 
 with tab_poke_singles:
-    render_game("poke_singles", POKE_SET_META, POKE_SINGLES, "", POKE_SINGLES_CATEGORIES)
+    render_game_singles("poke_singles", POKE_SET_META, POKE_SINGLES, "", POKE_SINGLES_CATEGORIES)
 
 with tab_op_sealed:
     render_game("op_sealed", OP_SET_META, OP_SETS, "op_", OP_SEALED_CATEGORIES)
