@@ -111,47 +111,14 @@ date,code,name,product,median,avg,low,high,count
 2026-04-05,JT,Journey Together,Lillie's Clefairy ex 184/159 SIR Raw,279.0,282.11,265.0,300.0,9
 2026-04-05,SV10,Destined Rivals,Team Rocket's Mewtwo ex 231/182 SIR PSA 10,1800.0,1800.0,1100.0,2500.0,2
 2026-04-05,SV10,Destined Rivals,Team Rocket's Mewtwo ex 231/182 SIR Raw,999.0,987.71,950.0,1000.0,7
-2026-04-06,ME01,Mega Evolution,Booster Box,424.99,424.99,424.99,424.99,1
-2026-04-06,ME01,Mega Evolution,Enhanced Booster Box,476.23,477.77,430.0,539.0,24
-2026-04-06,ME01,Mega Evolution,ETB,198.95,196.29,160.0,249.0,13
-2026-04-06,ME01,Mega Evolution,PC ETB,198.95,218.06,160.0,389.0,13
-2026-04-06,ME01,Mega Evolution,Booster Bundle,95.0,98.69,74.99,139.95,20
-2026-04-06,ME02,Phantasmal Flames,Booster Box,615.88,630.5,540.0,755.0,27
-2026-04-06,ME02,Phantasmal Flames,ETB,200.0,210.54,170.0,295.0,34
-2026-04-06,ME02,Phantasmal Flames,PC ETB,199.5,205.45,170.0,249.95,26
-2026-04-06,ME02,Phantasmal Flames,Booster Bundle,119.97,116.84,89.0,149.95,20
-2026-04-06,ME2.5,Ascended Heroes,ETB,249.0,246.23,199.99,290.0,38
-2026-04-06,ME2.5,Ascended Heroes,PC ETB,249.0,244.41,218.88,289.95,31
-2026-04-06,ME2.5,Ascended Heroes,Booster Bundle,120.0,113.15,45.0,150.0,13
-2026-04-06,ME03,Perfect Order,Booster Box,340.0,344.74,299.0,400.0,21
-2026-04-06,ME03,Perfect Order,ETB,132.5,139.02,103.0,180.0,46
-2026-04-06,ME03,Perfect Order,PC ETB,125.0,129.07,103.0,150.0,22
-2026-04-06,ME03,Perfect Order,Booster Bundle,74.5,74.87,59.0,95.0,26
-2026-04-06,SV01,Scarlet & Violet,Booster Box,449.98,454.36,419.99,504.97,8
-2026-04-06,SV01,Scarlet & Violet,ETB,319.99,305.84,160.0,600.0,15
-2026-04-06,SV02,Paldea Evolved,Booster Box,709.98,726.15,650.0,820.0,20
-2026-04-06,SV02,Paldea Evolved,ETB,383.94,542.85,84.99,1329.95,8
-2026-04-06,SV03,Obsidian Flames,Booster Box,654.44,654.48,525.0,799.99,12
-2026-04-06,SV03,Obsidian Flames,ETB,500.0,513.76,400.0,609.95,9
-2026-04-06,SV04,Paradox Rift,Booster Box,500.0,527.3,410.0,700.0,13
-2026-04-06,SV05,Temporal Forces,Booster Box,481.5,509.4,430.0,609.95,15
-2026-04-06,SV05,Temporal Forces,ETB,217.5,253.22,34.0,469.95,12
-2026-04-06,SV06,Twilight Masquerade,Booster Box,590.0,589.33,569.99,620.0,9
-2026-04-06,SV06,Twilight Masquerade,ETB,246.97,251.77,184.99,400.0,14
-2026-04-06,SV07,Stellar Crown,Booster Box,500.0,518.29,279.95,669.95,13
-2026-04-06,SV07,Stellar Crown,ETB,249.97,262.92,69.95,399.0,16
-2026-04-06,SV08,Surging Sparks,Booster Box,599.0,599.36,519.0,784.88,13
-2026-04-06,SV08,Surging Sparks,ETB,199.0,208.76,159.95,427.99,35
-2026-04-06,SV09,Journey Together,ETB,249.95,251.59,80.0,385.0,17
-2026-04-06,SV10,Destined Rivals,Booster Box,1000.0,1013.31,899.0,1200.0,11
-2026-04-06,SV10,Destined Rivals,ETB,424.44,437.06,360.0,550.0,14
-2026-04-06,SV11,Black Bolt & White Flare,Booster Box,150.0,150.0,150.0,150.0,1
-2026-04-06,SV3.5,Pokemon 151,ETB,1050.0,1084.14,900.0,1249.95,13
-2026-04-06,SV3.5,Pokemon 151,Booster Bundle,289.5,292.01,217.55,367.88,20
-2026-04-06,SV4.5,Paldean Fates,ETB,530.0,537.11,430.0,700.0,16
-2026-04-06,SV4.5,Paldean Fates,Booster Bundle,287.5,293.31,250.0,389.95,16
-2026-04-06,PROMO,Promos,EB Games Gengar 050/088,180.0,192.35,132.0,389.0,50
+2026-04-06,PROMO,Promos,EB Games Gengar 050/088,170.0,181.44,130.0,300.0,49
+2026-04-06,PROMO,Promos,Eevee SVP 173 Black Star Promo,30.0,32.79,24.0,55.0,50
+2026-04-06,PROMO,Promos,Lucario VSTAR SWSH291 Black Star Promo,29.99,38.22,21.0,95.0,49
+2026-04-06,PROMO,Promos,Mega Lucario ex MEP 033 Black Star Promo,41.1,42.81,35.0,50.0,18
+2026-04-06,PROMO,Promos,Riolu 010 Mega Evolution ETB Promo,29.99,30.43,21.99,39.95,28
+2026-04-06,PROMO,Promos,Snorlax SVP 051 Pokemon 151 ETB Promo,50.0,56.49,31.5,125.0,50
+2026-04-06,PROMO,Promos,Venusaur 13 Black Star Promo,1217.5,1217.5,235.0,2200.0,2
 2026-04-06,JT,Journey Together,Lillie's Clefairy ex 184/159 SIR PSA 10,1100.0,1100.0,1100.0,1100.0,1
-2026-04-06,JT,Journey Together,Lillie's Clefairy ex 184/159 SIR Raw,279.5,281.9,265.0,300.0,10
+2026-04-06,JT,Journey Together,Lillie's Clefairy ex 184/159 SIR Raw,280.0,284.87,269.99,300.0,8
 2026-04-06,SV10,Destined Rivals,Team Rocket's Mewtwo ex 231/182 SIR PSA 10,1800.0,1800.0,1100.0,2500.0,2
 2026-04-06,SV10,Destined Rivals,Team Rocket's Mewtwo ex 231/182 SIR Raw,999.5,994.0,975.0,1000.0,6
