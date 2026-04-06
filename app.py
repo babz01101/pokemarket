@@ -28,6 +28,18 @@ POKE_SET_META = {
     "PROMO": {"name": "EB Games Promos",   "released": "2026",     "color": "#e040fb"},
     "JT":    {"name": "Journey Together",  "released": "Mar 2025", "color": "#f06292"},
     "SV10":  {"name": "Destined Rivals",   "released": "Apr 2025", "color": "#9c27b0"},
+    "SV01":  {"name": "Scarlet & Violet",  "released": "Mar 2023", "color": "#ef5350"},
+    "SV02":  {"name": "Paldea Evolved",    "released": "Jun 2023", "color": "#66bb6a"},
+    "SV03":  {"name": "Obsidian Flames",   "released": "Aug 2023", "color": "#ff7043"},
+    "SV04":  {"name": "Paradox Rift",      "released": "Nov 2023", "color": "#ab47bc"},
+    "SV05":  {"name": "Temporal Forces",   "released": "Mar 2024", "color": "#42a5f5"},
+    "SV06":  {"name": "Twilight Masquerade", "released": "May 2024", "color": "#26c6da"},
+    "SV07":  {"name": "Stellar Crown",     "released": "Aug 2024", "color": "#ffd54f"},
+    "SV08":  {"name": "Surging Sparks",    "released": "Nov 2024", "color": "#ff8a65"},
+    "SV09":  {"name": "Journey Together",   "released": "Mar 2025", "color": "#7e57c2"},
+    "SV11":  {"name": "Black Bolt & White Flare", "released": "Jun 2025", "color": "#37474f"},
+    "SV3.5": {"name": "Pokemon 151",       "released": "Sep 2023", "color": "#e53935"},
+    "SV4.5": {"name": "Paldean Fates",     "released": "Jan 2024", "color": "#78909c"},
 }
 
 OP_SET_META = {
@@ -45,10 +57,11 @@ OP_SET_META = {
     "OP-12":  {"name": "Legacy of the Master",      "released": "Sep 2025", "color": "#607d8b"},
     "OP-13":  {"name": "Carrying on His Will",      "released": "Nov 2025", "color": "#ff7043"},
     "OP-14":  {"name": "The Azure Sea's Seven",     "released": "Jan 2026", "color": "#00bcd4"},
+    "OP-15":  {"name": "Adventure on Kami's Island", "released": "Mar 2026", "color": "#ff8a65"},
+    "OP-16":  {"name": "The Time of Battle",        "released": "TBA",      "color": "#78909c"},
     "EB-01":  {"name": "Memorial Collection",       "released": "2024",     "color": "#ec407a"},
     "EB-02":  {"name": "Anime 25th Collection",     "released": "2025",     "color": "#ffb300"},
     "EB-03":  {"name": "Heroines Edition",          "released": "2025",     "color": "#f48fb1"},
-    "EB-04":  {"name": "Egghead Crisis",            "released": "2025",     "color": "#80cbc4"},
     "PRB-01": {"name": "Card The Best",             "released": "2024",     "color": "#cd7f32"},
     "PRB-02": {"name": "Card The Best Vol.2",       "released": "2025",     "color": "#b0bec5"},
 }
@@ -196,8 +209,8 @@ PLOTLY_LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     font=dict(family="Inter, sans-serif", size=13, color="#999"),
     margin=dict(t=30, b=60, l=60, r=20),
-    xaxis=dict(gridcolor="rgba(255,255,255,0.04)", zeroline=False),
-    yaxis=dict(gridcolor="rgba(255,255,255,0.06)", zeroline=False),
+    xaxis=dict(gridcolor="rgba(255,255,255,0.08)", zeroline=False),
+    yaxis=dict(gridcolor="rgba(255,255,255,0.15)", zeroline=False, showgrid=True),
     legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=11)),
 )
 
@@ -423,6 +436,17 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
         sold_df = load_data("sold", selected, data_prefix)
         if sold_df is not None:
             sold_latest = sold_df[sold_df["date"] == sold_df["date"].max()]
+
+            # Build lookup: product label → cheapest listing URL
+            cheapest_listings: dict[str, list[dict]] = {}
+            if sales_data:
+                latest_sales_date = max(sales_data.keys()) if sales_data else None
+                if latest_sales_date and sales_data[latest_sales_date]:
+                    for prod_label, listings_list in sales_data[latest_sales_date].items():
+                        if listings_list:
+                            sorted_listings = sorted(listings_list, key=lambda l: l["price"])
+                            cheapest_listings[prod_label] = sorted_listings
+
             deals = []
             for _, row in latest.iterrows():
                 sold_match = sold_latest[sold_latest["label"] == row["label"]]
@@ -433,17 +457,39 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                 if sold_price > 0 and active_price < sold_price:
                     pct = ((sold_price - active_price) / sold_price) * 100
                     if pct >= 3:
-                        deals.append((row["label"], active_price, sold_price, pct))
+                        # Get top 3 cheapest listings for this product
+                        top_listings = cheapest_listings.get(row["label"], [])[:3]
+                        deals.append((row["label"], active_price, sold_price, pct, top_listings))
 
             if deals:
                 st.markdown("")
-                for label, ap, sp, pct in sorted(deals, key=lambda x: -x[3]):
+                for label, ap, sp, pct, top_links in sorted(deals, key=lambda x: -x[3]):
+                    links_html = ""
+                    if top_links:
+                        link_items = []
+                        for lst in top_links:
+                            url = lst.get("url", "")
+                            price = lst.get("price", 0)
+                            if url:
+                                link_items.append(
+                                    f'<a href="{url}" target="_blank" '
+                                    f'style="color:#ff9800; text-decoration:none; font-size:0.82rem;">'
+                                    f'${price:.2f} &rarr;</a>'
+                                )
+                        if link_items:
+                            links_html = (
+                                '<p style="margin:0.3rem 0 0 0;">'
+                                + " &nbsp;&bull;&nbsp; ".join(link_items)
+                                + '</p>'
+                            )
+
                     st.markdown(f"""
                     <div class="alert-card deal">
                         <h4>DEAL: {label}</h4>
                         <p>Active: <strong>${ap:.2f}</strong> &nbsp;&bull;&nbsp;
                         Sold: <strong>${sp:.2f}</strong> &nbsp;&bull;&nbsp;
                         <strong>{pct:.1f}% below sold value</strong></p>
+                        {links_html}
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -518,7 +564,10 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                 x=prod_data["date"],
                 y=prod_data[metric_col],
                 name=label,
-                mode="lines+markers",
+                mode="lines+markers+text",
+                text=prod_data[metric_col].apply(lambda v: f"${v:.0f}"),
+                textposition="top center",
+                textfont=dict(size=9, color=color),
                 line=dict(width=2.5, color=color, shape="spline", smoothing=1.2),
                 marker=dict(
                     size=prod_data["count"].clip(upper=12) + 4,
@@ -540,13 +589,32 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
             zeroline=False,
             tickformat="%d %b",
         )
+        timeline_layout["yaxis"] = dict(
+            gridcolor="#555555",
+            gridwidth=1,
+            griddash="dot",
+            zeroline=False,
+            tickprefix="$",
+            showgrid=True,
+        )
         fig_timeline.update_layout(
             **timeline_layout,
             xaxis_title="",
             yaxis_title=f"{metric_label} price (AUD)",
+            yaxis2=dict(
+                overlaying="y",
+                side="right",
+                showgrid=False,
+                tickprefix="$",
+                matches="y",
+            ),
             hovermode="closest",
             height=430,
         )
+        # Add invisible trace to activate the right y-axis
+        fig_timeline.add_trace(go.Scatter(
+            x=[None], y=[None], yaxis="y2", showlegend=False,
+        ))
         st.plotly_chart(fig_timeline, use_container_width=True, key=f"timeline_{game_key}_{mode}")
     else:
         if mode == "sold":
@@ -656,6 +724,8 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                                 df_rows.append(row)
 
                             list_df = pd.DataFrame(df_rows).sort_values("Price (AUD)")
+                            if "Sold" in list_df.columns:
+                                list_df["Sold"] = pd.to_datetime(list_df["Sold"], format="%d %b %Y", errors="coerce")
                             if "Feedback" in list_df.columns:
                                 list_df["Feedback"] = pd.to_numeric(list_df["Feedback"], errors="coerce").fillna(0).astype(int)
                             col_config: dict = {
@@ -666,6 +736,10 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                                     "eBay Link", display_text="View listing →"
                                 ),
                             }
+                            if mode == "sold" and "Sold" in list_df.columns:
+                                col_config["Sold"] = st.column_config.DateColumn(
+                                    "Sold", format="D MMM YYYY"
+                                )
                             if mode == "sold" and "Feedback" in list_df.columns:
                                 col_config["Feedback"] = st.column_config.NumberColumn(
                                     "Feedback", format="%d"
@@ -686,20 +760,74 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
             st.info("No listing data yet. Click Refresh in the sidebar.")
 
 
+# ── Category definitions ─────────────────────────────────────────────────────
+
+POKE_CATEGORIES = {
+    "Scarlet & Violet": ["SV01", "SV02", "SV03", "SV04", "SV05", "SV06", "SV07", "SV08", "SV09", "SV10", "SV11"],
+    "Special Sets": ["SV3.5", "SV4.5"],
+    "Mega Evolution": ["ME01", "ME02", "ME2.5", "ME03"],
+    "Singles & Promos": ["PROMO", "JT"],
+}
+
+OP_CATEGORIES = {
+    "Main Sets": ["OP-01", "OP-02", "OP-03", "OP-04", "OP-05", "OP-06", "OP-07",
+                   "OP-08", "OP-09", "OP-10", "OP-11", "OP-12", "OP-13", "OP-14", "OP-15", "OP-16"],
+    "Extra Boosters": ["EB-01", "EB-02", "EB-03"],
+    "Premium Boosters": ["PRB-01", "PRB-02"],
+}
+
+
 # ── Game tab renderer ────────────────────────────────────────────────────────
 
-def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str):
+def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str,
+                categories: dict | None = None):
     set_codes = list(set_meta.keys())
     set_options = {c: f"{c} — {set_meta[c]['name']}" for c in set_codes}
 
-    selected_sets = st.pills(
-        "Sets",
-        options=set_codes,
-        default=set_codes,
-        selection_mode="multi",
-        format_func=lambda c: set_options[c],
-        key=f"{game_key}_sets",
-    )
+    # ── Categorised set filter ──
+    if categories:
+        # Select All / Deselect All
+        col_btn1, col_btn2, col_spacer = st.columns([1, 1, 4])
+        with col_btn1:
+            if st.button("Select All", key=f"{game_key}_select_all", use_container_width=True):
+                for cat_name, cat_codes in categories.items():
+                    st.session_state[f"{game_key}_cat_{cat_name}"] = [
+                        c for c in cat_codes if c in set_meta
+                    ]
+                st.rerun()
+        with col_btn2:
+            if st.button("Deselect All", key=f"{game_key}_deselect_all", use_container_width=True):
+                for cat_name in categories:
+                    st.session_state[f"{game_key}_cat_{cat_name}"] = []
+                st.rerun()
+
+        # One multiselect per category
+        selected_sets = []
+        num_cats = len(categories)
+        cols = st.columns(num_cats)
+        for i, (cat_name, cat_codes) in enumerate(categories.items()):
+            valid_codes = [c for c in cat_codes if c in set_meta]
+            cat_key = f"{game_key}_cat_{cat_name}"
+            # Default to all selected on first load
+            if cat_key not in st.session_state:
+                st.session_state[cat_key] = valid_codes
+
+            with cols[i]:
+                chosen = st.multiselect(
+                    cat_name,
+                    options=valid_codes,
+                    format_func=lambda c: set_options.get(c, c),
+                    key=cat_key,
+                )
+                selected_sets.extend(chosen)
+    else:
+        # Fallback: simple pills
+        selected_sets = st.pills(
+            "Sets", options=set_codes, default=set_codes,
+            selection_mode="multi",
+            format_func=lambda c: set_options[c],
+            key=f"{game_key}_sets",
+        )
 
     # Build selected product labels
     selected = []
@@ -778,10 +906,10 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
 tab_pokemon, tab_onepiece = st.tabs(["Pokemon", "One Piece"])
 
 with tab_pokemon:
-    render_game("poke", POKE_SET_META, POKE_SETS + POKE_SINGLES, "")
+    render_game("poke", POKE_SET_META, POKE_SETS + POKE_SINGLES, "", POKE_CATEGORIES)
 
 with tab_onepiece:
-    render_game("op", OP_SET_META, OP_SETS, "op_")
+    render_game("op", OP_SET_META, OP_SETS, "op_", OP_CATEGORIES)
 
 # ── Footer
 st.markdown("---")

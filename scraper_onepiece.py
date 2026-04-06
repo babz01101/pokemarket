@@ -103,6 +103,18 @@ SETS = [
      "title_must": ["booster box"],
      "title_must_not": ["starter", "sleeve", "playmat"]},
 
+    {"name": "Adventure on Kami's Island", "code": "OP-15", "product": "Booster Box",
+     "query": "one piece OP15 adventure kami island booster box",
+     "title_must_any": ["op-15", "op15", "kami"],
+     "title_must": ["booster box"],
+     "title_must_not": ["starter", "sleeve", "playmat"]},
+
+    {"name": "The Time of Battle", "code": "OP-16", "product": "Booster Box",
+     "query": "one piece OP16 time of battle booster box",
+     "title_must_any": ["op-16", "op16", "time of battle"],
+     "title_must": ["booster box"],
+     "title_must_not": ["starter", "sleeve", "playmat"]},
+
     # ── Extra Booster sets ──
 
     {"name": "Memorial Collection", "code": "EB-01", "product": "Booster Box",
@@ -123,18 +135,12 @@ SETS = [
      "title_must": ["booster box"],
      "title_must_not": ["starter", "sleeve", "playmat"]},
 
-    {"name": "Egghead Crisis", "code": "EB-04", "product": "Booster Box",
-     "query": "one piece EB04 egghead crisis booster box",
-     "title_must_any": ["eb-04", "eb04", "egghead"],
-     "title_must": ["booster box"],
-     "title_must_not": ["starter", "sleeve", "playmat"]},
-
     # ── Premium Booster sets ──
 
     {"name": "Card The Best", "code": "PRB-01", "product": "Booster Box",
-     "query": "one piece PRB01 card the best booster box",
+     "query": "one piece PRB01 card the best booster box english",
      "title_must_any": ["prb-01", "prb01"],
-     "title_must": ["booster box"],
+     "title_must": ["booster box", "english"],
      "title_must_not": ["starter", "sleeve", "playmat", "vol.2", "vol 2", "vol2"]},
 
     {"name": "Card The Best Vol.2", "code": "PRB-02", "product": "Booster Box",

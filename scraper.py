@@ -75,6 +75,22 @@ _OTHER_SETS = {
     "ME03": ["phantasmal flames", "ascended heroes", "chaos rising"],
 }
 
+_SV_OTHER_SETS = {
+    "SV01": ["paldea", "obsidian", "paradox", "temporal", "twilight", "stellar", "surging", "fates", "151", "destined", "journey", "bolt", "flare"],
+    "SV02": ["obsidian", "paradox", "temporal", "twilight", "stellar", "surging", "fates", "151", "destined", "journey", "bolt", "flare"],
+    "SV03": ["paldea", "paradox", "temporal", "twilight", "stellar", "surging", "fates", "151", "destined", "journey", "bolt", "flare"],
+    "SV04": ["paldea", "obsidian", "temporal", "twilight", "stellar", "surging", "fates", "151", "destined", "journey", "bolt", "flare"],
+    "SV05": ["paldea", "obsidian", "paradox", "twilight", "stellar", "surging", "fates", "151", "destined", "journey", "bolt", "flare"],
+    "SV06": ["paldea", "obsidian", "paradox", "temporal", "stellar", "surging", "fates", "151", "destined", "journey", "bolt", "flare"],
+    "SV07": ["paldea", "obsidian", "paradox", "temporal", "twilight", "surging", "fates", "151", "destined", "journey", "bolt", "flare"],
+    "SV08": ["paldea", "obsidian", "paradox", "temporal", "twilight", "stellar", "fates", "151", "destined", "journey", "bolt", "flare"],
+    "SV09": ["paldea", "obsidian", "paradox", "temporal", "twilight", "stellar", "surging", "fates", "151", "destined", "bolt", "flare"],
+    "SV10": ["paldea", "obsidian", "paradox", "temporal", "twilight", "stellar", "surging", "fates", "151", "journey", "bolt", "flare"],
+    "SV11": ["paldea", "obsidian", "paradox", "temporal", "twilight", "stellar", "surging", "fates", "151", "destined", "journey"],
+    "SV3.5": ["paldea", "obsidian", "paradox", "temporal", "twilight", "stellar", "surging", "fates", "destined", "journey", "bolt", "flare"],
+    "SV4.5": ["obsidian", "paradox", "temporal", "twilight", "stellar", "surging", "151", "destined", "journey", "bolt", "flare"],
+}
+
 SETS = [
     # ── ME01 — Mega Evolution (Sep 2025) ──
     #    title_must_any: at least one of these must appear (handles "ME01", "ME-01", "mega evolution base")
@@ -176,6 +192,175 @@ SETS = [
      "title_must_any": ["me03", "me-03", "perfect order"],
      "title_must": ["bundle"],
      "title_must_not": ["booster box"] + _OTHER_SETS["ME03"]},
+
+    # ── SV01 — Scarlet & Violet Base Set (Mar 2023) ──
+    {"name": "Scarlet & Violet",  "code": "SV01",  "product": "Booster Box",
+     "query": "pokemon scarlet violet SV01 base booster box sealed",
+     "title_must_any": ["sv01", "sv 01", "sv-01", "scarlet & violet", "scarlet and violet"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV01"]},
+
+    {"name": "Scarlet & Violet",  "code": "SV01",  "product": "ETB",
+     "query": "pokemon scarlet violet SV01 base elite trainer box sealed",
+     "title_must_any": ["sv01", "sv 01", "sv-01", "scarlet & violet", "scarlet and violet"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV01"]},
+
+    # ── SV02 — Paldea Evolved (Jun 2023) ──
+    {"name": "Paldea Evolved",    "code": "SV02",  "product": "Booster Box",
+     "query": "pokemon paldea evolved booster box sealed",
+     "title_must_any": ["sv02", "sv 02", "sv-02", "paldea evolved"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV02"]},
+
+    {"name": "Paldea Evolved",    "code": "SV02",  "product": "ETB",
+     "query": "pokemon paldea evolved elite trainer box sealed",
+     "title_must_any": ["sv02", "sv 02", "sv-02", "paldea evolved"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV02"]},
+
+    # ── SV03 — Obsidian Flames (Aug 2023) ──
+    {"name": "Obsidian Flames",   "code": "SV03",  "product": "Booster Box",
+     "query": "pokemon obsidian flames booster box sealed",
+     "title_must_any": ["sv03", "sv 03", "sv-03", "obsidian flames"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV03"]},
+
+    {"name": "Obsidian Flames",   "code": "SV03",  "product": "ETB",
+     "query": "pokemon obsidian flames elite trainer box sealed",
+     "title_must_any": ["sv03", "sv 03", "sv-03", "obsidian flames"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV03"]},
+
+    # ── SV04 — Paradox Rift (Nov 2023) ──
+    {"name": "Paradox Rift",      "code": "SV04",  "product": "Booster Box",
+     "query": "pokemon paradox rift booster box sealed",
+     "title_must_any": ["sv04", "sv 04", "sv-04", "paradox rift"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV04"]},
+
+    {"name": "Paradox Rift",      "code": "SV04",  "product": "ETB",
+     "query": "pokemon paradox rift elite trainer box sealed",
+     "title_must_any": ["sv04", "sv 04", "sv-04", "paradox rift"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV04"]},
+
+    # ── SV05 — Temporal Forces (Mar 2024) ──
+    {"name": "Temporal Forces",   "code": "SV05",  "product": "Booster Box",
+     "query": "pokemon temporal forces booster box sealed",
+     "title_must_any": ["sv05", "sv 05", "sv-05", "temporal forces"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV05"]},
+
+    {"name": "Temporal Forces",   "code": "SV05",  "product": "ETB",
+     "query": "pokemon temporal forces elite trainer box sealed",
+     "title_must_any": ["sv05", "sv 05", "sv-05", "temporal forces"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV05"]},
+
+    # ── SV06 — Twilight Masquerade (May 2024) ──
+    {"name": "Twilight Masquerade", "code": "SV06", "product": "Booster Box",
+     "query": "pokemon twilight masquerade booster box sealed",
+     "title_must_any": ["sv06", "sv 06", "sv-06", "twilight masquerade"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV06"]},
+
+    {"name": "Twilight Masquerade", "code": "SV06", "product": "ETB",
+     "query": "pokemon twilight masquerade elite trainer box sealed",
+     "title_must_any": ["sv06", "sv 06", "sv-06", "twilight masquerade"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV06"]},
+
+    # ── SV07 — Stellar Crown (Aug 2024) ──
+    {"name": "Stellar Crown",    "code": "SV07",  "product": "Booster Box",
+     "query": "pokemon stellar crown booster box sealed",
+     "title_must_any": ["sv07", "sv 07", "sv-07", "stellar crown"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV07"]},
+
+    {"name": "Stellar Crown",    "code": "SV07",  "product": "ETB",
+     "query": "pokemon stellar crown elite trainer box sealed",
+     "title_must_any": ["sv07", "sv 07", "sv-07", "stellar crown"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV07"]},
+
+    # ── SV08 — Surging Sparks (Nov 2024) ──
+    {"name": "Surging Sparks",   "code": "SV08",  "product": "Booster Box",
+     "query": "pokemon surging sparks booster box sealed",
+     "title_must_any": ["sv08", "sv 08", "sv-08", "surging sparks"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV08"]},
+
+    {"name": "Surging Sparks",   "code": "SV08",  "product": "ETB",
+     "query": "pokemon surging sparks elite trainer box sealed",
+     "title_must_any": ["sv08", "sv 08", "sv-08", "surging sparks"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV08"]},
+
+    # ── SV09 — Journey Together (Mar 2025) ──
+    {"name": "Journey Together",  "code": "SV09",  "product": "Booster Box",
+     "query": "pokemon journey together SV09 booster box sealed",
+     "title_must_any": ["sv09", "sv 09", "sv-09", "journey together"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV09"]},
+
+    {"name": "Journey Together",  "code": "SV09",  "product": "ETB",
+     "query": "pokemon journey together SV09 elite trainer box sealed",
+     "title_must_any": ["sv09", "sv 09", "sv-09", "journey together"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV09"]},
+
+    # ── SV10 — Destined Rivals (Apr 2025) ──
+    {"name": "Destined Rivals",   "code": "SV10",  "product": "Booster Box",
+     "query": "pokemon destined rivals SV10 booster box sealed",
+     "title_must_any": ["sv10", "sv 10", "sv-10", "destined rivals"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV10"]},
+
+    {"name": "Destined Rivals",   "code": "SV10",  "product": "ETB",
+     "query": "pokemon destined rivals SV10 elite trainer box sealed",
+     "title_must_any": ["sv10", "sv 10", "sv-10", "destined rivals"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV10"]},
+
+    # ── SV11 — Black Bolt & White Flare (Jun 2025) ──
+    {"name": "Black Bolt & White Flare", "code": "SV11", "product": "Booster Box",
+     "query": "pokemon black bolt white flare SV11 booster box sealed",
+     "title_must_any": ["sv11", "sv 11", "sv-11", "black bolt", "white flare"],
+     "title_must": ["booster box"],
+     "title_must_not": ["enhanced", "bundle", "etb", "trainer box"] + _SV_OTHER_SETS["SV11"]},
+
+    {"name": "Black Bolt & White Flare", "code": "SV11", "product": "ETB",
+     "query": "pokemon black bolt white flare SV11 elite trainer box sealed",
+     "title_must_any": ["sv11", "sv 11", "sv-11", "black bolt", "white flare"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV11"]},
+
+    # ── SV3.5 — Pokemon 151 (Sep 2023) ──
+    {"name": "Pokemon 151",      "code": "SV3.5", "product": "ETB",
+     "query": "pokemon 151 elite trainer box sealed",
+     "title_must_any": ["sv3.5", "sv 3.5", "151"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle"] + _SV_OTHER_SETS["SV3.5"]},
+
+    {"name": "Pokemon 151",      "code": "SV3.5", "product": "Booster Bundle",
+     "query": "pokemon 151 booster bundle sealed",
+     "title_must_any": ["sv3.5", "sv 3.5", "151"],
+     "title_must": ["bundle"],
+     "title_must_not": ["booster box", "elite trainer", "trainer box"] + _SV_OTHER_SETS["SV3.5"]},
+
+    # ── SV4.5 — Paldean Fates (Jan 2024) ──
+    {"name": "Paldean Fates",    "code": "SV4.5", "product": "ETB",
+     "query": "pokemon paldean fates elite trainer box sealed",
+     "title_must_any": ["sv4.5", "sv 4.5", "paldean fates"],
+     "title_must": ["elite trainer"],
+     "title_must_not": ["bundle", "evolved"] + _SV_OTHER_SETS["SV4.5"]},
+
+    {"name": "Paldean Fates",    "code": "SV4.5", "product": "Booster Bundle",
+     "query": "pokemon paldean fates booster bundle sealed",
+     "title_must_any": ["sv4.5", "sv 4.5", "paldean fates"],
+     "title_must": ["bundle"],
+     "title_must_not": ["booster box", "elite trainer", "trainer box", "evolved"] + _SV_OTHER_SETS["SV4.5"]},
 ]
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
