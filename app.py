@@ -412,6 +412,19 @@ def get_set_color(label: str, set_meta: dict) -> str:
     return set_meta.get(code, {}).get("color", "#0693e3")
 
 
+def fmt_label(label: str, set_meta: dict) -> str:
+    """Format an internal '{code} {product}' label as '{code} {name} — {product}' for display."""
+    parts = label.split(" ", 1)
+    code = parts[0]
+    rest = parts[1] if len(parts) > 1 else ""
+    name = set_meta.get(code, {}).get("name", "")
+    if name and rest:
+        return f"{code} {name} — {rest}"
+    if name:
+        return f"{code} {name}"
+    return label
+
+
 def load_data(mode: str, selected: list, prefix: str = "") -> pd.DataFrame | None:
     csv_path = DATA_DIR / f"{prefix}prices_{mode}.csv"
     if not csv_path.exists():
@@ -639,7 +652,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
 
                     st.markdown(f"""
                     <div class="alert-card deal">
-                        <h4>DEAL: {label}</h4>
+                        <h4>DEAL: {fmt_label(label, set_meta)}</h4>
                         <p>Active: <strong>${ap:.2f}</strong> &nbsp;&bull;&nbsp;
                         Sold: <strong>${sp:.2f}</strong> &nbsp;&bull;&nbsp;
                         <strong>{pct:.1f}% below sold value</strong></p>
@@ -667,7 +680,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
             for label, lp, la, pct in sorted(dips, key=lambda x: -x[3]):
                 st.markdown(f"""
                 <div class="alert-card buy">
-                    <h4>BUY SIGNAL: {label}</h4>
+                    <h4>BUY SIGNAL: {fmt_label(label, set_meta)}</h4>
                     <p>Current: <strong>${lp:.2f}</strong> &nbsp;&bull;&nbsp;
                     {rolling_window}d avg: <strong>${la:.2f}</strong> &nbsp;&bull;&nbsp;
                     <strong>{pct:.1f}% below average</strong></p>
@@ -678,10 +691,11 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
     st.markdown("")
     bar_data = latest[["label", price_metric]].sort_values(price_metric, ascending=False).copy()
     bar_data["color"] = bar_data["label"].apply(lambda l: get_set_color(l, set_meta))
+    bar_data["display"] = bar_data["label"].apply(lambda l: fmt_label(l, set_meta))
 
     fig_bar = go.Figure()
     fig_bar.add_trace(go.Bar(
-        x=bar_data["label"],
+        x=bar_data["display"],
         y=bar_data[price_metric],
         text=bar_data[price_metric].apply(lambda v: f"${v:.0f}"),
         textposition="outside",
@@ -728,10 +742,11 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                 for i, v in enumerate(prod_data[metric_col])
             ]
 
+            display_label = fmt_label(label, set_meta)
             fig_timeline.add_trace(go.Scatter(
                 x=prod_data["date"],
                 y=prod_data[metric_col],
-                name=label,
+                name=display_label,
                 mode="lines+markers+text",
                 text=text_labels,
                 textposition="top center",
@@ -745,7 +760,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                 ),
                 customdata=prod_data[["count"]].values,
                 hovertemplate=(
-                    f"<b>{label}</b><br>"
+                    f"<b>{display_label}</b><br>"
                     "%{x|%d %b %Y}<br>"
                     f"Price: $%{{y:.2f}}<br>"
                     "Listings on day: %{customdata[0]}<extra></extra>"
@@ -796,14 +811,15 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
 
             fig_line = go.Figure()
             for i, col in enumerate(pivot.columns):
+                disp = fmt_label(col, set_meta)
                 fig_line.add_trace(go.Scatter(
                     x=pivot.index,
                     y=pivot[col],
-                    name=col,
+                    name=disp,
                     mode="lines+markers",
                     line=dict(width=2.5, color=colors[i], shape="spline", smoothing=1.2),
                     marker=dict(size=6),
-                    hovertemplate=f"{col}<br>" + "%{x|%d %b}<br>$%{y:.2f}<extra></extra>",
+                    hovertemplate=f"{disp}<br>" + "%{x|%d %b}<br>$%{y:.2f}<extra></extra>",
                 ))
             fig_line.update_layout(
                 **PLOTLY_LAYOUT,
@@ -829,7 +845,7 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                 std_dev = prices.std()
                 volatility = (std_dev / prices.mean()) * 100 if prices.mean() else 0
                 vol_rows.append({
-                    "Product": label,
+                    "Product": fmt_label(label, set_meta),
                     "Current ($)": current,
                     "Prev ($)": prev,
                     "Change (%)": round(day_change, 1),
@@ -874,7 +890,8 @@ def render_panel(df: pd.DataFrame, sales_data: dict | None, mode: str,
                 available = sorted([p for p in day_sales.keys() if p in selected])
                 if available:
                     pick = st.selectbox("Product", options=available, key=f"sales_{game_key}_{mode}",
-                                        label_visibility="collapsed")
+                                        label_visibility="collapsed",
+                                        format_func=lambda l: fmt_label(l, set_meta))
                     if pick and pick in day_sales:
                         listings = day_sales[pick]
                         if listings:
@@ -1067,6 +1084,7 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
             merged = merged.sort_values("discount", ascending=False)
 
             comp_df = merged[["label", f"{price_metric}_sold", f"{price_metric}_active", "discount"]].copy()
+            comp_df["label"] = comp_df["label"].apply(lambda l: fmt_label(l, set_meta))
             comp_df.columns = ["Product", "Sold (AUD)", "Active (AUD)", "Discount (%)"]
 
             def _color_discount(val):
@@ -1219,6 +1237,7 @@ def render_game_singles(game_key: str, set_meta: dict, all_items: list, data_pre
             merged = merged.sort_values("discount", ascending=False)
 
             comp_df = merged[["label", f"{price_metric}_sold", f"{price_metric}_active", "discount"]].copy()
+            comp_df["label"] = comp_df["label"].apply(lambda l: fmt_label(l, set_meta))
             comp_df.columns = ["Product", "Sold (AUD)", "Active (AUD)", "Discount (%)"]
 
             def _color_discount(val):
