@@ -28,6 +28,10 @@ def _run_op_sealed():
     from scraper_onepiece import run_sealed
     return run_sealed()
 
+def _run_db_sealed():
+    from scraper_dragonball import run_sealed
+    return run_sealed()
+
 # Set definitions are duplicated here so app.py has zero scraper dependencies.
 # Keep in sync with scraper.py / scraper_onepiece.py when adding new sets.
 
@@ -96,6 +100,12 @@ OP_SETS = [
               "EB-01","EB-02","EB-03","PRB-01","PRB-02"]
 ]
 
+DB_SETS = [
+    {"code": c, "product": "Booster Box"}
+    for c in ["FB01","FB02","FB03","FB04","FB05","FB06","FB07","FB08","FB09","FB10","FB11",
+              "SB01","SB02","ST01"]
+]
+
 DATA_DIR = Path(__file__).parent / "data"
 
 # ── Game metadata ──────────────────────────────────────────────────────────────
@@ -144,6 +154,23 @@ OP_SET_META = {
     "EB-03":  {"name": "Heroines Edition",          "released": "2025",     "color": "#c2185b"},
     "PRB-01": {"name": "Card The Best",             "released": "2024",     "color": "#8d6e32"},
     "PRB-02": {"name": "Card The Best Vol.2",       "released": "2025",     "color": "#607d8b"},
+}
+
+DB_SET_META = {
+    "FB01": {"name": "Awakened Pulse",     "released": "Feb 2024", "color": "#e65100"},
+    "FB02": {"name": "Blazing Aura",       "released": "Jun 2024", "color": "#d84315"},
+    "FB03": {"name": "Raging Roar",        "released": "Sep 2024", "color": "#c62828"},
+    "FB04": {"name": "Ultra Limit",        "released": "Dec 2024", "color": "#6a1b9a"},
+    "FB05": {"name": "New Adventure",      "released": "Mar 2025", "color": "#1565c0"},
+    "FB06": {"name": "Rivals Clash",       "released": "Jun 2025", "color": "#2e7d32"},
+    "FB07": {"name": "Wish For Shenron",   "released": "Sep 2025", "color": "#ad1457"},
+    "FB08": {"name": "Saiyan's Pride",     "released": "Dec 2025", "color": "#ef6c00"},
+    "FB09": {"name": "Dual Evolution",     "released": "Mar 2026", "color": "#00838f"},
+    "FB10": {"name": "Cross Force",        "released": "TBA",      "color": "#5d4037"},
+    "FB11": {"name": "Brightness of Hope", "released": "TBA",      "color": "#c6a600"},
+    "SB01": {"name": "Manga Booster 01",   "released": "2024",     "color": "#37474f"},
+    "SB02": {"name": "Manga Booster 02",   "released": "2025",     "color": "#546e7a"},
+    "ST01": {"name": "Story Booster 01",   "released": "2024",     "color": "#7b1fa2"},
 }
 
 # ── Page config ──────────────────────────────────────────────────────────────
@@ -509,7 +536,7 @@ with st.sidebar:
 
     def _build_export_csv() -> str:
         rows = []
-        for prefix, game in [("", "Pokemon"), ("op_", "One Piece")]:
+        for prefix, game in [("", "Pokemon"), ("op_", "One Piece"), ("db_", "Dragon Ball")]:
             for mode in ("sold", "active"):
                 csv_path = DATA_DIR / f"{prefix}prices_{mode}.csv"
                 if csv_path.exists():
@@ -933,6 +960,13 @@ OP_SEALED_CATEGORIES = {
 
 OP_SINGLES_CATEGORIES = {}  # No OP singles yet
 
+DB_SEALED_CATEGORIES = {
+    "Fusion Boosters": ["FB01", "FB02", "FB03", "FB04", "FB05", "FB06",
+                        "FB07", "FB08", "FB09", "FB10", "FB11"],
+    "Manga Boosters": ["SB01", "SB02"],
+    "Story Boosters": ["ST01"],
+}
+
 
 # ── Game tab renderer ────────────────────────────────────────────────────────
 
@@ -1229,8 +1263,8 @@ def render_game_singles(game_key: str, set_meta: dict, all_items: list, data_pre
 
 # ── Main content ─────────────────────────────────────────────────────────────
 
-tab_poke_sealed, tab_poke_singles, tab_op_sealed, tab_op_singles = st.tabs([
-    "Pokemon Sealed", "Pokemon Singles", "One Piece Sealed", "One Piece Singles"
+tab_poke_sealed, tab_poke_singles, tab_op_sealed, tab_op_singles, tab_db_sealed = st.tabs([
+    "Pokemon Sealed", "Pokemon Singles", "One Piece Sealed", "One Piece Singles", "Dragon Ball Sealed"
 ])
 
 with tab_poke_sealed:
@@ -1247,6 +1281,10 @@ with tab_op_sealed:
 
 with tab_op_singles:
     st.info("One Piece singles tracking coming soon. Add singles to scraper_onepiece.py to get started.")
+
+with tab_db_sealed:
+    render_game("db_sealed", DB_SET_META, DB_SETS, "db_", DB_SEALED_CATEGORIES,
+                refresh_fn=_run_db_sealed, refresh_label="Dragon Ball Sealed")
 
 # ── Footer
 st.markdown("---")
