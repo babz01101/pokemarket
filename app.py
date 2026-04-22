@@ -32,6 +32,10 @@ def _run_db_sealed():
     from scraper_dragonball import run_sealed
     return run_sealed()
 
+def _run_poke_jp_singles():
+    from scraper_pokemon_jp import run_singles
+    return run_singles()
+
 # Set definitions are duplicated here so app.py has zero scraper dependencies.
 # Keep in sync with scraper.py / scraper_onepiece.py when adding new sets.
 
@@ -106,6 +110,11 @@ DB_SETS = [
               "SB01","SB02","ST01"]
 ]
 
+POKE_JP_SINGLES = [
+    {"code": "NINJA", "product": f"#{n:03d} SR PSA 10"}
+    for n in range(84, 121)
+]
+
 DATA_DIR = Path(__file__).parent / "data"
 
 # ── Game metadata ──────────────────────────────────────────────────────────────
@@ -171,6 +180,10 @@ DB_SET_META = {
     "SB01": {"name": "Manga Booster 01",   "released": "2024",     "color": "#37474f"},
     "SB02": {"name": "Manga Booster 02",   "released": "2025",     "color": "#546e7a"},
     "ST01": {"name": "Story Booster 01",   "released": "2024",     "color": "#7b1fa2"},
+}
+
+POKE_JP_SET_META = {
+    "NINJA": {"name": "Ninja Spinner", "released": "2026", "color": "#c2185b"},
 }
 
 # ── Page config ──────────────────────────────────────────────────────────────
@@ -549,7 +562,8 @@ with st.sidebar:
 
     def _build_export_csv() -> str:
         rows = []
-        for prefix, game in [("", "Pokemon"), ("op_", "One Piece"), ("db_", "Dragon Ball")]:
+        for prefix, game in [("", "Pokemon"), ("op_", "One Piece"),
+                              ("db_", "Dragon Ball"), ("pj_", "Pokemon JP")]:
             for mode in ("sold", "active"):
                 csv_path = DATA_DIR / f"{prefix}prices_{mode}.csv"
                 if csv_path.exists():
@@ -984,6 +998,10 @@ DB_SEALED_CATEGORIES = {
     "Story Boosters": ["ST01"],
 }
 
+POKE_JP_SINGLES_CATEGORIES = {
+    "Ninja Spinner": ["NINJA"],
+}
+
 
 # ── Game tab renderer ────────────────────────────────────────────────────────
 
@@ -1282,8 +1300,10 @@ def render_game_singles(game_key: str, set_meta: dict, all_items: list, data_pre
 
 # ── Main content ─────────────────────────────────────────────────────────────
 
-tab_poke_sealed, tab_poke_singles, tab_op_sealed, tab_op_singles, tab_db_sealed = st.tabs([
-    "Pokemon Sealed", "Pokemon Singles", "One Piece Sealed", "One Piece Singles", "Dragon Ball Sealed"
+(tab_poke_sealed, tab_poke_singles, tab_poke_jp_singles,
+ tab_op_sealed, tab_op_singles, tab_db_sealed) = st.tabs([
+    "Pokemon Sealed", "Pokemon Singles", "Pokemon JP Singles",
+    "One Piece Sealed", "One Piece Singles", "Dragon Ball Sealed",
 ])
 
 with tab_poke_sealed:
@@ -1293,6 +1313,11 @@ with tab_poke_sealed:
 with tab_poke_singles:
     render_game_singles("poke_singles", POKE_SET_META, POKE_SINGLES, "", POKE_SINGLES_CATEGORIES,
                         refresh_fn=_run_poke_singles, refresh_label="Pokemon Singles")
+
+with tab_poke_jp_singles:
+    render_game_singles("poke_jp_singles", POKE_JP_SET_META, POKE_JP_SINGLES, "pj_",
+                        POKE_JP_SINGLES_CATEGORIES,
+                        refresh_fn=_run_poke_jp_singles, refresh_label="Pokemon JP Singles")
 
 with tab_op_sealed:
     render_game("op_sealed", OP_SET_META, OP_SETS, "op_", OP_SEALED_CATEGORIES,

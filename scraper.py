@@ -598,11 +598,19 @@ def _parse_page(soup: BeautifulSoup, set_info: dict, sold: bool) -> list[dict]:
         if re.search(r'\b\d+\s*x\b|\bx\s*\d+\b|\blot\b|\bbulk\b|\bcase\b', title_lower):
             continue
 
-        # Skip non-English versions
-        if any(kw in title_lower for kw in ["japanese", "japan", "korean", "chinese", "jp ", "jpn", "kor"]):
-            continue
-        if re.search(r'[\u3000-\u9fff\uac00-\ud7af]', title):
-            continue
+        # Language filters — opt-out for sets that explicitly track non-English cards.
+        allow_japanese = set_info.get("allow_japanese", False)
+        if not allow_japanese:
+            if any(kw in title_lower for kw in ["japanese", "japan", "korean", "chinese", "jp ", "jpn", "kor"]):
+                continue
+            if re.search(r'[\u3000-\u9fff\uac00-\ud7af]', title):
+                continue
+        else:
+            # Still exclude Korean/Chinese when scraping Japanese-specific sets.
+            if any(kw in title_lower for kw in ["korean", "chinese", " kor ", "kor "]):
+                continue
+            if re.search(r'[\uac00-\ud7af]', title):  # Hangul only
+                continue
 
         # Title validation
         title_must_any = set_info.get("title_must_any", [])
