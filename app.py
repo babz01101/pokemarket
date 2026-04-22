@@ -125,11 +125,78 @@ _NINJA_SPINNER_NAMES = {
     120: "Mega Greninja ex",
 }
 
-POKE_JP_SINGLES = [
-    {"code": "NINJA",
-     "product": f"{_NINJA_SPINNER_NAMES[n]} #{n:03d} SR PSA 10"}
-    for n in range(84, 121)
-]
+_NIHIL_ZERO_NAMES = {
+    81: "Spewpa", 82: "Rowlet", 83: "Talonflame", 84: "Aurorus",
+    85: "Dedenne", 86: "Clefairy", 87: "Espurr", 88: "Probopass",
+    89: "Tyrunt", 90: "Drapion", 91: "Doublade", 92: "Raticate",
+    93: "Decidueye ex", 94: "Salazzle ex", 95: "Mega Starmie ex",
+    96: "Mega Clefable ex", 97: "Mega Zygarde ex", 98: "Yveltal ex",
+    99: "Mega Skarmory ex", 100: "Meowth ex", 101: "Energy Swatter",
+    102: "Sacred Ash", 103: "Poké Pad", 104: "Wondrous Patch",
+    105: "Tarragon", 106: "Naveen", 107: "Rosa's Encouragement",
+    108: "Jacinthe", 109: "Forest of Vitality", 110: "Lumiose City",
+    111: "Mega Starmie ex", 112: "Mega Clefable ex", 113: "Mega Zygarde ex",
+    114: "Meowth ex", 115: "Rosa's Encouragement", 116: "Jacinthe",
+    117: "Mega Zygarde ex",
+}
+
+_INFERNO_X_NAMES = {
+    81: "Ludicolo", 82: "Nymble", 83: "Charcadet", 84: "Dewgong",
+    85: "Piplup", 86: "Yamper", 87: "Zacian", 88: "Flygon",
+    89: "Toxtricity", 90: "Togedemaru", 91: "Wigglytuff", 92: "Ambipom",
+    93: "Mega Heracross ex", 94: "Mega Charizard X ex", 95: "Oricorio ex",
+    96: "Rotom ex", 97: "Mismagius ex", 98: "Mega Sharpedo ex",
+    99: "Empoleon ex", 100: "Mega Lopunny ex", 101: "Heat Burner",
+    102: "Switch", 103: "Sacred Charm", 104: "Punk Helmet",
+    105: "Grimsley's Move", 106: "Dawn", 107: "Firebreather",
+    108: "Battle Colosseum", 109: "Ignition Energy",
+    110: "Mega Charizard X ex", 111: "Oricorio ex", 112: "Rotom ex",
+    113: "Mega Sharpedo ex", 114: "Mega Lopunny ex", 115: "Dawn",
+    116: "Mega Charizard X ex",
+}
+
+_MEGA_BRAVE_NAMES = {
+    64: "Bulbasaur", 65: "Ivysaur", 66: "Exeggutor", 67: "Vulpix",
+    68: "Riolu", 69: "Marshadow", 70: "Garganacl", 71: "Spiritomb",
+    72: "Shroodle", 73: "Steelix", 74: "Spearow", 75: "Yungoos",
+    76: "Mega Venusaur ex", 77: "Mega Camerupt ex", 78: "Mega Lucario ex",
+    79: "Mega Absol ex", 80: "Mega Mawile ex", 81: "Premium Power Pro",
+    82: "Fight Gong", 83: "Night Stretcher", 84: "Air Balloon",
+    85: "Lt. Surge's Deal", 86: "Lillie's Determination",
+    87: "Mega Venusaur ex", 88: "Mega Lucario ex", 89: "Mega Absol ex",
+    90: "Lt. Surge's Deal", 91: "Lillie's Determination",
+    92: "Mega Lucario ex",
+}
+
+_MEGA_SYMPHONIA_NAMES = {
+    64: "Shuckle", 65: "Ninjask", 66: "Litleo", 67: "Snover",
+    68: "Clawitzer", 69: "Inteleon", 70: "Helioptile", 71: "Alakazam",
+    72: "Shedinja", 73: "Houndstone", 74: "Delibird", 75: "Stufful",
+    76: "Mega Abomasnow ex", 77: "Mega Manectric ex",
+    78: "Mega Gardevoir ex", 79: "Mega Latias ex",
+    80: "Mega Kangaskhan ex", 81: "Buddy-Buddy Poffin", 82: "Rare Candy",
+    83: "Mega Signal", 84: "Acerola's Prank", 85: "Wally's Compassion",
+    86: "Mystery Garden", 87: "Mega Gardevoir ex", 88: "Mega Latias ex",
+    89: "Mega Kangaskhan ex", 90: "Acerola's Prank",
+    91: "Wally's Compassion", 92: "Mega Gardevoir ex",
+}
+
+
+def _jp_entries(code: str, names: dict) -> list[dict]:
+    return [
+        {"code": code,
+         "product": f"{names[n]} #{n:03d} SR PSA 10"}
+        for n in sorted(names.keys())
+    ]
+
+
+POKE_JP_SINGLES = (
+    _jp_entries("NINJA",  _NINJA_SPINNER_NAMES)
+    + _jp_entries("NIHIL",  _NIHIL_ZERO_NAMES)
+    + _jp_entries("INFX",   _INFERNO_X_NAMES)
+    + _jp_entries("MBRAVE", _MEGA_BRAVE_NAMES)
+    + _jp_entries("MSYMPH", _MEGA_SYMPHONIA_NAMES)
+)
 
 DATA_DIR = Path(__file__).parent / "data"
 
@@ -199,7 +266,11 @@ DB_SET_META = {
 }
 
 POKE_JP_SET_META = {
-    "NINJA": {"name": "Ninja Spinner", "released": "2026", "color": "#c2185b"},
+    "MBRAVE": {"name": "Mega Brave",     "released": "Aug 2025", "color": "#2e7d32"},
+    "MSYMPH": {"name": "Mega Symphonia", "released": "Aug 2025", "color": "#6a1b9a"},
+    "INFX":   {"name": "Inferno X",      "released": "Sep 2025", "color": "#e65100"},
+    "NIHIL":  {"name": "Nihil Zero",     "released": "Jan 2026", "color": "#263238"},
+    "NINJA":  {"name": "Ninja Spinner",  "released": "Apr 2026", "color": "#c2185b"},
 }
 
 # ── Page config ──────────────────────────────────────────────────────────────
@@ -1015,7 +1086,11 @@ DB_SEALED_CATEGORIES = {
 }
 
 POKE_JP_SINGLES_CATEGORIES = {
-    "Ninja Spinner": ["NINJA"],
+    "Ninja Spinner":  ["NINJA"],
+    "Nihil Zero":     ["NIHIL"],
+    "Inferno X":      ["INFX"],
+    "Mega Brave":     ["MBRAVE"],
+    "Mega Symphonia": ["MSYMPH"],
 }
 
 
