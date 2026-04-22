@@ -19,6 +19,23 @@ from scraper import get_session, scrape_set, DATA_DIR
 
 # ── Card builders ────────────────────────────────────────────────────────────
 
+# Ninja Spinner SR card names (084–120)
+NINJA_SPINNER_NAMES = {
+    84: "Chespin", 85: "Fennekin", 86: "Froakie", 87: "Frogadier",
+    88: "Ampharos", 89: "Xerneas", 90: "Claydol", 91: "Crobat",
+    92: "Metang", 93: "Sliggoo", 94: "Tauros", 95: "Watchog",
+    96: "Beedrill ex", 97: "Mega Pyroar ex", 98: "Mega Greninja ex",
+    99: "Mega Floette ex", 100: "Gourgeist ex", 101: "Cobalion ex",
+    102: "Mega Dragalge ex", 103: "Cinccino ex", 104: "Energy Retrieval",
+    105: "Jumbo Ice Cream", 106: "Special Red Card", 107: "Tool Scrapper",
+    108: "AZ's Tranquility", 109: "Philippe", 110: "Roxie's Performance",
+    111: "Emma", 112: "Surfing Beach", 113: "Prism Tower",
+    114: "Mega Greninja ex", 115: "Mega Floette ex", 116: "Mega Dragalge ex",
+    117: "Cinccino ex", 118: "AZ's Tranquility", 119: "Roxie's Performance",
+    120: "Mega Greninja ex",
+}
+
+
 def _ninja_spinner_card(num: int) -> dict:
     """Build a Ninja Spinner SR PSA 10 entry for card number ``num``.
 
@@ -28,10 +45,12 @@ def _ninja_spinner_card(num: int) -> dict:
     in other sets like Crimson Haze).
     """
     padded = f"{num:03d}"
+    card_name = NINJA_SPINNER_NAMES.get(num, "")
+    product = f"{card_name} #{padded} SR PSA 10" if card_name else f"#{padded} SR PSA 10"
     return {
         "name": "Ninja Spinner",
         "code": "NINJA",
-        "product": f"#{padded} SR PSA 10",
+        "product": product,
         "query": f"pokemon japanese ninja spinner {padded} psa 10",
         "allow_japanese": True,
         "location": "au_jp",

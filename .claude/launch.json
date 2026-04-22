@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "PokeMarket Dashboard",
-      "runtimeExecutable": "streamlit",
+      "runtimeExecutable": "/Users/mattberndt/Library/Python/3.9/bin/streamlit",
       "runtimeArgs": ["run", "app.py"],
       "port": 8501
     }

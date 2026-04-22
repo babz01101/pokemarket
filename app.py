@@ -110,8 +110,24 @@ DB_SETS = [
               "SB01","SB02","ST01"]
 ]
 
+_NINJA_SPINNER_NAMES = {
+    84: "Chespin", 85: "Fennekin", 86: "Froakie", 87: "Frogadier",
+    88: "Ampharos", 89: "Xerneas", 90: "Claydol", 91: "Crobat",
+    92: "Metang", 93: "Sliggoo", 94: "Tauros", 95: "Watchog",
+    96: "Beedrill ex", 97: "Mega Pyroar ex", 98: "Mega Greninja ex",
+    99: "Mega Floette ex", 100: "Gourgeist ex", 101: "Cobalion ex",
+    102: "Mega Dragalge ex", 103: "Cinccino ex", 104: "Energy Retrieval",
+    105: "Jumbo Ice Cream", 106: "Special Red Card", 107: "Tool Scrapper",
+    108: "AZ's Tranquility", 109: "Philippe", 110: "Roxie's Performance",
+    111: "Emma", 112: "Surfing Beach", 113: "Prism Tower",
+    114: "Mega Greninja ex", 115: "Mega Floette ex", 116: "Mega Dragalge ex",
+    117: "Cinccino ex", 118: "AZ's Tranquility", 119: "Roxie's Performance",
+    120: "Mega Greninja ex",
+}
+
 POKE_JP_SINGLES = [
-    {"code": "NINJA", "product": f"#{n:03d} SR PSA 10"}
+    {"code": "NINJA",
+     "product": f"{_NINJA_SPINNER_NAMES[n]} #{n:03d} SR PSA 10"}
     for n in range(84, 121)
 ]
 
