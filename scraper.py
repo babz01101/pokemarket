@@ -442,20 +442,32 @@ USER_AGENTS = [
 MAX_PAGES = 3  # Scrape up to 3 pages per product (eBay shows ~60 cards/page)
 
 
-def build_url(query: str, sold: bool = True, page: int = 1) -> str:
+def build_url(query: str, sold: bool = True, page: int = 1, location: str = "au") -> str:
+    """Build an eBay AU search URL.
+
+    ``location`` selects the seller-location filter:
+      * ``"au"`` — Australia only (default; LH_PrefLoc=1)
+      * ``"au_jp"`` — Australia + Japan via eBay's multi-country filter
+    """
     q = query.replace(" ", "+")
-    # eBay pagination: _pgn=page number, _ipg kept at default
     page_param = f"&_pgn={page}" if page > 1 else ""
+
+    if location == "au_jp":
+        # AU + JP: explicit located-in country filter. Country IDs: AU=15, JP=101.
+        loc_param = "&LH_PrefLoc=99&_salic=1%2C15%2C101"
+    else:
+        loc_param = "&LH_PrefLoc=1"
+
     if sold:
         return (
             f"https://www.ebay.com.au/sch/i.html?_nkw={q}"
-            f"&LH_Sold=1&LH_Complete=1&LH_PrefLoc=1&_sop=13{page_param}"
+            f"&LH_Sold=1&LH_Complete=1{loc_param}&_sop=13{page_param}"
         )
     else:
         # Active listings, sorted by price + shipping (lowest first)
         return (
             f"https://www.ebay.com.au/sch/i.html?_nkw={q}"
-            f"&LH_PrefLoc=1&LH_BIN=1&_sop=15{page_param}"
+            f"{loc_param}&LH_BIN=1&_sop=15{page_param}"
         )
 
 
@@ -551,15 +563,21 @@ def _parse_page(soup: BeautifulSoup, set_info: dict, sold: bool) -> list[dict]:
                 if nm and nm.group(1).lower() not in {"sponsored", "new", "listing", "ebay"}:
                     seller_name = nm.group(1)
 
-            # Check seller location — skip international sellers
+            # Check seller location. By default we keep only AU sellers;
+            # JP-allowing sets also accept Japan-based sellers.
             location = ""
             for row in card.select(".s-card__attribute-row"):
                 row_text = row.get_text(strip=True)
                 if row_text.startswith("from "):
                     location = row_text
                     break
-            if location and "australia" not in location.lower():
-                continue
+            if location:
+                loc_lower = location.lower()
+                allowed = ["australia"]
+                if set_info.get("allow_japanese", False):
+                    allowed.append("japan")
+                if not any(a in loc_lower for a in allowed):
+                    continue
         else:
             title_el = card.select_one(".s-item__title")
             if not title_el:
@@ -616,6 +634,9 @@ def _parse_page(soup: BeautifulSoup, set_info: dict, sold: bool) -> list[dict]:
         title_must_any = set_info.get("title_must_any", [])
         if title_must_any and not any(kw in title_lower for kw in title_must_any):
             continue
+        title_must_any_2 = set_info.get("title_must_any_2", [])
+        if title_must_any_2 and not any(kw in title_lower for kw in title_must_any_2):
+            continue
         title_must = set_info.get("title_must", [])
         if title_must and not all(kw in title_lower for kw in title_must):
             continue
@@ -653,7 +674,10 @@ def scrape_set(session: requests.Session, set_info: dict, sold: bool = True) -> 
     seen_urls: set[str] = set()
 
     for page in range(1, MAX_PAGES + 1):
-        url = build_url(set_info["query"], sold=sold, page=page)
+        url = build_url(
+            set_info["query"], sold=sold, page=page,
+            location=set_info.get("location", "au"),
+        )
 
         try:
             resp = session.get(url, timeout=15)

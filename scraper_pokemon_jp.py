@@ -20,7 +20,13 @@ from scraper import get_session, scrape_set, DATA_DIR
 # ── Card builders ────────────────────────────────────────────────────────────
 
 def _ninja_spinner_card(num: int) -> dict:
-    """Build a Ninja Spinner SR PSA 10 entry for card number ``num``."""
+    """Build a Ninja Spinner SR PSA 10 entry for card number ``num``.
+
+    Ninja Spinner set total is 83, so every card prints as "xxx/83"
+    (or "xxx/083"). We pin identification to the set-total pattern
+    rather than the word "ninja" (which matches Greninja-named cards
+    in other sets like Crimson Haze).
+    """
     padded = f"{num:03d}"
     return {
         "name": "Ninja Spinner",
@@ -28,12 +34,18 @@ def _ninja_spinner_card(num: int) -> dict:
         "product": f"#{padded} SR PSA 10",
         "query": f"pokemon japanese ninja spinner {padded} psa 10",
         "allow_japanese": True,
-        # At least one form of the card number must appear in the title.
-        "title_must_any": [padded, f"/{num}", f"#{num}", f" {num} "],
-        # Set name + grade must both appear. Require "ninja" (accepts
-        # both "Ninja Spinner" and "Ninja" variants in listing titles).
-        "title_must": ["psa 10", "ninja"],
-        # Exclude other grades, other graders, bundles, and English cards.
+        "location": "au_jp",
+        # Group 1: at least one card-number form must appear.
+        "title_must_any": [f"{padded}/", f"{num}/83", f"{num}/083", f"#{num}"],
+        # Group 2: a Ninja Spinner set marker must appear (excludes other
+        # sets that also contain cards numbered 84-120 like Crimson Haze).
+        # Accepts the phrase "ninja spinner" (never part of a single-word
+        # Pokemon name like Greninja), the set total "/83" / "/083", or
+        # the Japanese set code "m4" used in many listing titles.
+        "title_must_any_2": ["ninja spinner", "/83", "/083", "m4 ", "m4-", "m4:"],
+        # Grade must appear.
+        "title_must": ["psa 10"],
+        # Exclude other grades, graders, bundles, and other-language cards.
         "title_must_not": [
             "psa 9", "psa 8", "psa 7", "psa 6",
             "cgc", "bgs", "beckett", "ace grading",
