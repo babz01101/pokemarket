@@ -23,67 +23,67 @@ SETS = [
      "query": "dragon ball super fusion world FB01 awakened pulse booster box english",
      "title_must_any": ["fb-01", "fb01", "awakened pulse"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "Blazing Aura", "code": "FB02", "product": "Booster Box",
      "query": "dragon ball super fusion world FB02 blazing aura booster box english",
      "title_must_any": ["fb-02", "fb02", "blazing aura"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "Raging Roar", "code": "FB03", "product": "Booster Box",
      "query": "dragon ball super fusion world FB03 raging roar booster box english",
      "title_must_any": ["fb-03", "fb03", "raging roar"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "Ultra Limit", "code": "FB04", "product": "Booster Box",
      "query": "dragon ball super fusion world FB04 ultra limit booster box english",
      "title_must_any": ["fb-04", "fb04", "ultra limit"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "New Adventure", "code": "FB05", "product": "Booster Box",
      "query": "dragon ball super fusion world FB05 new adventure booster box english",
      "title_must_any": ["fb-05", "fb05", "new adventure"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "Rivals Clash", "code": "FB06", "product": "Booster Box",
      "query": "dragon ball super fusion world FB06 rivals clash booster box english",
      "title_must_any": ["fb-06", "fb06", "rivals clash"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "Wish For Shenron", "code": "FB07", "product": "Booster Box",
      "query": "dragon ball super fusion world FB07 wish for shenron booster box english",
      "title_must_any": ["fb-07", "fb07", "wish for shenron", "shenron"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "Saiyan's Pride", "code": "FB08", "product": "Booster Box",
      "query": "dragon ball super fusion world FB08 saiyan pride booster box english",
      "title_must_any": ["fb-08", "fb08", "saiyan"],
      "title_must": ["booster box", "pride"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "Dual Evolution", "code": "FB09", "product": "Booster Box",
      "query": "dragon ball super fusion world FB09 dual evolution booster box english",
      "title_must_any": ["fb-09", "fb09", "dual evolution"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "Cross Force", "code": "FB10", "product": "Booster Box",
      "query": "dragon ball super fusion world FB10 cross force booster box english",
      "title_must_any": ["fb-10", "fb10", "cross force"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     {"name": "Brightness of Hope", "code": "FB11", "product": "Booster Box",
      "query": "dragon ball super fusion world FB11 brightness of hope booster box english",
      "title_must_any": ["fb-11", "fb11", "brightness of hope"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     # ── Manga Boosters ──
 
@@ -91,13 +91,13 @@ SETS = [
      "query": "dragon ball super fusion world SB01 manga booster box english",
      "title_must_any": ["sb-01", "sb01", "manga booster 01", "manga booster vol 1", "manga booster vol.1"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case", "sb-02", "sb02"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case", "sb-02", "sb02"]},
 
     {"name": "Manga Booster 02", "code": "SB02", "product": "Booster Box",
      "query": "dragon ball super fusion world SB02 manga booster 02 booster box english",
      "title_must_any": ["sb-02", "sb02", "manga booster 02", "manga booster vol 2", "manga booster vol.2"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter", "sleeve", "playmat", "case"]},
 
     # ── Story Booster ──
 
@@ -105,7 +105,7 @@ SETS = [
      "query": "dragon ball super fusion world ST01 story booster box english",
      "title_must_any": ["st-01", "st01", "story booster 01", "story booster vol 1", "story booster vol.1"],
      "title_must": ["booster box"],
-     "title_must_not": ["japanese", "starter deck", "sleeve", "playmat", "case"]},
+     "title_must_not": ["japanese", " jp", "starter deck", "sleeve", "playmat", "case"]},
 ]
 
 
