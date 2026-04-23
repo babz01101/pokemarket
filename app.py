@@ -1094,6 +1094,86 @@ POKE_JP_SINGLES_CATEGORIES = {
 }
 
 
+# ── Wishlist persistence ─────────────────────────────────────────────────────
+# Stored as a JSON list of "prefix|label" strings in data/wishlist.json.
+# `prefix` maps back to the CSV file the item lives in; `label` is the raw
+# "<code> <product>" string used as the internal key throughout the app.
+
+WISHLIST_PATH = DATA_DIR / "wishlist.json"
+
+# Map each data prefix to its display name + metadata needed by the Wishlist tab.
+PREFIX_META = {
+    "":    {"game": "Pokemon",     "set_meta": POKE_SET_META},
+    "pj_": {"game": "Pokemon JP",  "set_meta": POKE_JP_SET_META},
+    "op_": {"game": "One Piece",   "set_meta": OP_SET_META},
+    "db_": {"game": "Dragon Ball", "set_meta": DB_SET_META},
+}
+
+
+def _wishlist_key(prefix: str, label: str) -> str:
+    return f"{prefix}|{label}"
+
+
+def _wishlist_split(key: str) -> tuple[str, str]:
+    prefix, _, label = key.partition("|")
+    return prefix, label
+
+
+def load_wishlist() -> set[str]:
+    if not WISHLIST_PATH.exists():
+        return set()
+    try:
+        with open(WISHLIST_PATH) as f:
+            return set(json.load(f))
+    except (json.JSONDecodeError, OSError):
+        return set()
+
+
+def save_wishlist(items: set[str]) -> None:
+    DATA_DIR.mkdir(exist_ok=True)
+    with open(WISHLIST_PATH, "w") as f:
+        json.dump(sorted(items), f, indent=2)
+
+
+def wishlist_multiselect(data_prefix: str, set_meta: dict, all_labels: list[str],
+                         game_key: str) -> None:
+    """Render a multiselect at the top of a tab that adds/removes products
+    from the wishlist. Persists to disk on any change."""
+    if not all_labels:
+        return
+
+    wishlist = load_wishlist()
+    # Only show labels from this tab in both the options and the default.
+    options = sorted(all_labels, key=lambda l: fmt_label(l, set_meta))
+    label_to_display = {l: fmt_label(l, set_meta) for l in options}
+    current = [l for l in options if _wishlist_key(data_prefix, l) in wishlist]
+
+    with st.expander(f"⭐ Wishlist ({len(current)} from this tab)", expanded=False):
+        st.caption("Pick any products to add to your Wishlist tab. "
+                   "Remove a tag to un-star.")
+        picked = st.multiselect(
+            "Wishlist",
+            options=options,
+            default=current,
+            format_func=lambda l: label_to_display[l],
+            key=f"{game_key}_wishlist_picker",
+            label_visibility="collapsed",
+        )
+        picked_set = set(picked)
+        current_set = set(current)
+        if picked_set != current_set:
+            # Diff against the full wishlist (leave other tabs' items alone).
+            new_wishlist = set(wishlist)
+            for l in options:
+                k = _wishlist_key(data_prefix, l)
+                if l in picked_set:
+                    new_wishlist.add(k)
+                else:
+                    new_wishlist.discard(k)
+            save_wishlist(new_wishlist)
+            st.rerun()
+
+
 # ── Game tab renderer ────────────────────────────────────────────────────────
 
 def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str,
@@ -1110,6 +1190,10 @@ def render_game(game_key: str, set_meta: dict, all_items: list, data_prefix: str
                     st.rerun()
                 else:
                     st.error("No data — try again shortly.")
+
+    # ── Wishlist management ──
+    all_labels = [f"{it['code']} {it['product']}" for it in all_items]
+    wishlist_multiselect(data_prefix, set_meta, all_labels, game_key)
 
     set_codes = list(set_meta.keys())
     set_options = {c: f"{c} — {set_meta[c]['name']}" for c in set_codes}
@@ -1254,6 +1338,10 @@ def render_game_singles(game_key: str, set_meta: dict, all_items: list, data_pre
                 else:
                     st.error("No data — try again shortly.")
 
+    # ── Wishlist management ──
+    all_labels = [f"{it['code']} {it['product']}" for it in all_items]
+    wishlist_multiselect(data_prefix, set_meta, all_labels, game_key)
+
     if not categories:
         st.info("No singles categories configured yet.")
         return
@@ -1389,12 +1477,117 @@ def render_game_singles(game_key: str, set_meta: dict, all_items: list, data_pre
             st.info("No active listing data yet. Click Refresh in the sidebar.")
 
 
+# ── Wishlist tab renderer ────────────────────────────────────────────────────
+
+def render_wishlist():
+    st.markdown("### ⭐ Wishlist")
+    wishlist = load_wishlist()
+    if not wishlist:
+        st.info("Your wishlist is empty. Expand the **⭐ Wishlist** panel at the "
+                "top of any tab to add products.")
+        return
+
+    # Load each prefix's latest sold + active medians once.
+    latest_by_prefix: dict[str, dict[str, dict]] = {}
+    for prefix in PREFIX_META:
+        bucket: dict[str, dict] = {}
+        for mode in ("sold", "active"):
+            csv_path = DATA_DIR / f"{prefix}prices_{mode}.csv"
+            if not csv_path.exists():
+                continue
+            df = pd.read_csv(csv_path, parse_dates=["date"])
+            if df.empty:
+                continue
+            df["label"] = df["code"] + " " + df["product"]
+            latest = df[df["date"] == df["date"].max()]
+            for _, r in latest.iterrows():
+                bucket.setdefault(r["label"], {})[mode] = {
+                    "median": r["median"], "count": r["count"],
+                }
+        latest_by_prefix[prefix] = bucket
+
+    rows = []
+    for key in sorted(wishlist):
+        prefix, label = _wishlist_split(key)
+        if prefix not in PREFIX_META:
+            continue
+        meta = PREFIX_META[prefix]
+        prices = latest_by_prefix.get(prefix, {}).get(label, {})
+        sold = prices.get("sold", {})
+        active = prices.get("active", {})
+
+        sold_m = sold.get("median")
+        active_m = active.get("median")
+        discount = None
+        if sold_m and active_m and sold_m > 0:
+            discount = (sold_m - active_m) / sold_m * 100
+
+        rows.append({
+            "_key":    key,
+            "Game":    meta["game"],
+            "Product": fmt_label(label, meta["set_meta"]),
+            "Sold":    sold_m,
+            "Active":  active_m,
+            "Δ%":      discount,
+            "Active #": active.get("count"),
+        })
+
+    if not rows:
+        st.info("No price data for wishlisted items yet.")
+        return
+
+    df = pd.DataFrame(rows)
+
+    # ── Summary metrics ──
+    total = len(df)
+    with_prices = df["Sold"].notna().sum()
+    deals = (df["Δ%"] > 0).sum()
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Items", total)
+    m2.metric("Priced", f"{with_prices}/{total}")
+    m3.metric("Active < Sold", deals)
+
+    # ── Render table with per-row remove checkbox ──
+    df_display = df[["Game", "Product", "Sold", "Active", "Δ%", "Active #"]].copy()
+    df_display.insert(0, "Remove", False)
+
+    edited = st.data_editor(
+        df_display,
+        column_config={
+            "Remove": st.column_config.CheckboxColumn(
+                "Remove", help="Tick to remove from wishlist on save", width="small",
+            ),
+            "Sold":    st.column_config.NumberColumn("Sold (AUD)",   format="$%.2f"),
+            "Active":  st.column_config.NumberColumn("Active (AUD)", format="$%.2f"),
+            "Δ%":      st.column_config.NumberColumn("Discount",     format="%+.1f%%"),
+            "Active #": st.column_config.NumberColumn("Active Count", format="%d"),
+        },
+        disabled=["Game", "Product", "Sold", "Active", "Δ%", "Active #"],
+        hide_index=True,
+        use_container_width=True,
+        key="wishlist_editor",
+    )
+
+    to_remove = edited[edited["Remove"]].index.tolist()
+    col_a, col_b = st.columns([1, 5])
+    with col_a:
+        if st.button("🗑  Remove ticked", type="primary",
+                     disabled=len(to_remove) == 0, use_container_width=True):
+            keys_to_remove = {df.iloc[i]["_key"] for i in to_remove}
+            new_wishlist = wishlist - keys_to_remove
+            save_wishlist(new_wishlist)
+            st.rerun()
+    with col_b:
+        st.caption("Green = active below sold (potential deal) · Red = active above sold")
+
+
 # ── Main content ─────────────────────────────────────────────────────────────
 
 (tab_poke_sealed, tab_poke_singles, tab_poke_jp_singles,
- tab_op_sealed, tab_op_singles, tab_db_sealed) = st.tabs([
+ tab_op_sealed, tab_op_singles, tab_db_sealed, tab_wishlist) = st.tabs([
     "Pokemon Sealed", "Pokemon Singles", "Pokemon JP Singles",
     "One Piece Sealed", "One Piece Singles", "Dragon Ball Sealed",
+    "⭐ Wishlist",
 ])
 
 with tab_poke_sealed:
@@ -1420,6 +1613,9 @@ with tab_op_singles:
 with tab_db_sealed:
     render_game("db_sealed", DB_SET_META, DB_SETS, "db_", DB_SEALED_CATEGORIES,
                 refresh_fn=_run_db_sealed, refresh_label="Dragon Ball Sealed")
+
+with tab_wishlist:
+    render_wishlist()
 
 # ── Footer
 st.markdown("---")
