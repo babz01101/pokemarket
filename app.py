@@ -75,6 +75,37 @@ POKE_SETS = [
     {"code": "SV3.5", "product": "Booster Bundle"},
     {"code": "SV4.5", "product": "ETB"},
     {"code": "SV4.5", "product": "Booster Bundle"},
+    # ── Sword & Shield era ──
+    {"code": "SWSH01",   "product": "Booster Box"},
+    {"code": "SWSH01",   "product": "ETB"},
+    {"code": "SWSH02",   "product": "Booster Box"},
+    {"code": "SWSH02",   "product": "ETB"},
+    {"code": "SWSH03",   "product": "Booster Box"},
+    {"code": "SWSH03",   "product": "ETB"},
+    {"code": "SWSH3.5",  "product": "ETB"},
+    {"code": "SWSH04",   "product": "Booster Box"},
+    {"code": "SWSH04",   "product": "ETB"},
+    {"code": "SWSH4.5",  "product": "ETB"},
+    {"code": "SWSH05",   "product": "Booster Box"},
+    {"code": "SWSH05",   "product": "ETB"},
+    {"code": "SWSH06",   "product": "Booster Box"},
+    {"code": "SWSH06",   "product": "ETB"},
+    {"code": "SWSH07",   "product": "Booster Box"},
+    {"code": "SWSH07",   "product": "ETB"},
+    {"code": "SWSH7.5",  "product": "ETB"},
+    {"code": "SWSH08",   "product": "Booster Box"},
+    {"code": "SWSH08",   "product": "ETB"},
+    {"code": "SWSH09",   "product": "Booster Box"},
+    {"code": "SWSH09",   "product": "ETB"},
+    {"code": "SWSH9.5",  "product": "Booster Box"},
+    {"code": "SWSH9.5",  "product": "ETB"},
+    {"code": "SWSH10",   "product": "Booster Box"},
+    {"code": "SWSH10",   "product": "ETB"},
+    {"code": "SWSH11",   "product": "Booster Box"},
+    {"code": "SWSH11",   "product": "ETB"},
+    {"code": "SWSH12",   "product": "Booster Box"},
+    {"code": "SWSH12",   "product": "ETB"},
+    {"code": "SWSH12.5", "product": "ETB"},
 ]
 
 POKE_SINGLES = [
@@ -222,6 +253,24 @@ POKE_SET_META = {
     "SV11":  {"name": "Black Bolt & White Flare", "released": "Jun 2025", "color": "#37474f"},
     "SV3.5": {"name": "Pokemon 151",       "released": "Sep 2023", "color": "#c62828"},
     "SV4.5": {"name": "Paldean Fates",     "released": "Jan 2024", "color": "#546e7a"},
+    # Sword & Shield era (Feb 2020 – Jan 2023)
+    "SWSH01":   {"name": "Sword & Shield",   "released": "Feb 2020", "color": "#2962ff"},
+    "SWSH02":   {"name": "Rebel Clash",      "released": "May 2020", "color": "#00838f"},
+    "SWSH03":   {"name": "Darkness Ablaze",  "released": "Aug 2020", "color": "#37474f"},
+    "SWSH3.5":  {"name": "Champion's Path",  "released": "Sep 2020", "color": "#9e7b00"},
+    "SWSH04":   {"name": "Vivid Voltage",    "released": "Nov 2020", "color": "#f9a825"},
+    "SWSH4.5":  {"name": "Shining Fates",    "released": "Feb 2021", "color": "#ff6f00"},
+    "SWSH05":   {"name": "Battle Styles",    "released": "Mar 2021", "color": "#c62828"},
+    "SWSH06":   {"name": "Chilling Reign",   "released": "Jun 2021", "color": "#0277bd"},
+    "SWSH07":   {"name": "Evolving Skies",   "released": "Aug 2021", "color": "#6a1b9a"},
+    "SWSH7.5":  {"name": "Celebrations",     "released": "Oct 2021", "color": "#ad1457"},
+    "SWSH08":   {"name": "Fusion Strike",    "released": "Nov 2021", "color": "#d81b60"},
+    "SWSH09":   {"name": "Brilliant Stars",  "released": "Feb 2022", "color": "#1565c0"},
+    "SWSH9.5":  {"name": "Pokemon GO",       "released": "Jul 2022", "color": "#2e7d32"},
+    "SWSH10":   {"name": "Astral Radiance",  "released": "May 2022", "color": "#4527a0"},
+    "SWSH11":   {"name": "Lost Origin",      "released": "Sep 2022", "color": "#455a64"},
+    "SWSH12":   {"name": "Silver Tempest",   "released": "Nov 2022", "color": "#78909c"},
+    "SWSH12.5": {"name": "Crown Zenith",     "released": "Jan 2023", "color": "#bfa600"},
 }
 
 OP_SET_META = {
@@ -1057,9 +1106,14 @@ POKE_SEALED_CODES = ["ME01", "ME02", "ME2.5", "ME03",
 POKE_SINGLES_CODES = ["PROMO", "JT", "SV10"]  # SV10 has both sealed and singles
 
 POKE_SEALED_CATEGORIES = {
-    "Scarlet & Violet": ["SV01", "SV02", "SV03", "SV04", "SV05", "SV06", "SV07", "SV08", "SV09", "SV10", "SV11"],
-    "Special Sets": ["SV3.5", "SV4.5"],
     "Mega Evolution": ["ME01", "ME02", "ME2.5", "ME03"],
+    "Scarlet & Violet": ["SV01", "SV02", "SV03", "SV04", "SV05", "SV06",
+                          "SV07", "SV08", "SV09", "SV10", "SV11"],
+    "Special Sets": ["SV3.5", "SV4.5"],
+    "Sword & Shield": ["SWSH01", "SWSH02", "SWSH03", "SWSH3.5", "SWSH04",
+                        "SWSH4.5", "SWSH05", "SWSH06", "SWSH07", "SWSH7.5",
+                        "SWSH08", "SWSH09", "SWSH9.5", "SWSH10", "SWSH11",
+                        "SWSH12", "SWSH12.5"],
 }
 
 POKE_SINGLES_CATEGORIES = {

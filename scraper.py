@@ -427,6 +427,118 @@ SETS = [
      "title_must_not": ["booster box", "elite trainer", "trainer box", "evolved"] + _SV_OTHER_SETS["SV4.5"]},
 ]
 
+# ── Sword & Shield era (Feb 2020 – Jan 2023) ─────────────────────────────────
+# Every SWSH listing contains the words "Sword & Shield", so we can't rely
+# on that phrase to identify a set. Instead each set is pinned to its unique
+# sub-name (e.g. "Brilliant Stars") or SWSH code, and excludes every *other*
+# SWSH expansion name to prevent bleed between releases.
+
+_SWSH_NAMES = {
+    "SWSH01":   ["sword & shield base", "swsh base", "sword shield base"],
+    "SWSH02":   ["rebel clash"],
+    "SWSH03":   ["darkness ablaze"],
+    "SWSH3.5":  ["champion's path", "champions path"],
+    "SWSH04":   ["vivid voltage"],
+    "SWSH4.5":  ["shining fates"],
+    "SWSH05":   ["battle styles"],
+    "SWSH06":   ["chilling reign"],
+    "SWSH07":   ["evolving skies"],
+    "SWSH7.5":  ["celebrations"],
+    "SWSH08":   ["fusion strike"],
+    "SWSH09":   ["brilliant stars"],
+    "SWSH9.5":  ["pokemon go", "pokémon go"],
+    "SWSH10":   ["astral radiance"],
+    "SWSH11":   ["lost origin"],
+    "SWSH12":   ["silver tempest"],
+    "SWSH12.5": ["crown zenith"],
+}
+
+
+def _swsh_code_tokens(code: str) -> list[str]:
+    """Generate accepted code variants (e.g. 'swsh01', 'swsh 01', 'swsh-01')."""
+    num = code.removeprefix("SWSH")
+    lowered = code.lower()
+    variants = {lowered, f"swsh {num}", f"swsh-{num}"}
+    return sorted(variants)
+
+
+_SWSH_OTHER_SETS = {
+    code: [
+        n for other_code, names in _SWSH_NAMES.items() if other_code != code
+        for n in names
+    ]
+    for code in _SWSH_NAMES
+}
+
+
+def _swsh_entry(code: str, set_name: str, product: str, query_hint: str,
+                *, must: list[str], must_not_extra: list[str] | None = None) -> dict:
+    must_any = _swsh_code_tokens(code) + _SWSH_NAMES[code]
+    return {
+        "name": set_name, "code": code, "product": product,
+        "query": query_hint,
+        "title_must_any": must_any,
+        "title_must": must,
+        "title_must_not": (must_not_extra or []) + _SWSH_OTHER_SETS[code],
+    }
+
+
+_SWSH_BOOSTER_BOX_EXCLUDE = ["etb", "elite trainer", "trainer box",
+                             "bundle", "blister", "tin", "pack"]
+_SWSH_ETB_EXCLUDE          = ["bundle", "pokemon centre", "pokemon center"]
+
+# Sets known to have released with a standard 36-pack booster box.
+_SWSH_BB_SETS = [
+    ("SWSH01",   "Sword & Shield",   "pokemon sword shield base booster box"),
+    ("SWSH02",   "Rebel Clash",      "pokemon rebel clash booster box"),
+    ("SWSH03",   "Darkness Ablaze",  "pokemon darkness ablaze booster box"),
+    ("SWSH04",   "Vivid Voltage",    "pokemon vivid voltage booster box"),
+    ("SWSH05",   "Battle Styles",    "pokemon battle styles booster box"),
+    ("SWSH06",   "Chilling Reign",   "pokemon chilling reign booster box"),
+    ("SWSH07",   "Evolving Skies",   "pokemon evolving skies booster box"),
+    ("SWSH08",   "Fusion Strike",    "pokemon fusion strike booster box"),
+    ("SWSH09",   "Brilliant Stars",  "pokemon brilliant stars booster box"),
+    ("SWSH9.5",  "Pokemon GO",       "pokemon go booster box"),
+    ("SWSH10",   "Astral Radiance",  "pokemon astral radiance booster box"),
+    ("SWSH11",   "Lost Origin",      "pokemon lost origin booster box"),
+    ("SWSH12",   "Silver Tempest",   "pokemon silver tempest booster box"),
+]
+
+# Every SWSH set shipped with an Elite Trainer Box.
+_SWSH_ETB_SETS = [
+    ("SWSH01",   "Sword & Shield",   "pokemon sword shield base elite trainer box"),
+    ("SWSH02",   "Rebel Clash",      "pokemon rebel clash elite trainer box"),
+    ("SWSH03",   "Darkness Ablaze",  "pokemon darkness ablaze elite trainer box"),
+    ("SWSH3.5",  "Champion's Path",  "pokemon champions path elite trainer box"),
+    ("SWSH04",   "Vivid Voltage",    "pokemon vivid voltage elite trainer box"),
+    ("SWSH4.5",  "Shining Fates",    "pokemon shining fates elite trainer box"),
+    ("SWSH05",   "Battle Styles",    "pokemon battle styles elite trainer box"),
+    ("SWSH06",   "Chilling Reign",   "pokemon chilling reign elite trainer box"),
+    ("SWSH07",   "Evolving Skies",   "pokemon evolving skies elite trainer box"),
+    ("SWSH7.5",  "Celebrations",     "pokemon celebrations elite trainer box"),
+    ("SWSH08",   "Fusion Strike",    "pokemon fusion strike elite trainer box"),
+    ("SWSH09",   "Brilliant Stars",  "pokemon brilliant stars elite trainer box"),
+    ("SWSH9.5",  "Pokemon GO",       "pokemon go elite trainer box"),
+    ("SWSH10",   "Astral Radiance",  "pokemon astral radiance elite trainer box"),
+    ("SWSH11",   "Lost Origin",      "pokemon lost origin elite trainer box"),
+    ("SWSH12",   "Silver Tempest",   "pokemon silver tempest elite trainer box"),
+    ("SWSH12.5", "Crown Zenith",     "pokemon crown zenith elite trainer box"),
+]
+
+for _code, _name, _q in _SWSH_BB_SETS:
+    SETS.append(_swsh_entry(
+        _code, _name, "Booster Box", _q + " sealed",
+        must=["booster box"],
+        must_not_extra=_SWSH_BOOSTER_BOX_EXCLUDE,
+    ))
+
+for _code, _name, _q in _SWSH_ETB_SETS:
+    SETS.append(_swsh_entry(
+        _code, _name, "ETB", _q + " sealed",
+        must=["elite trainer"],
+        must_not_extra=_SWSH_ETB_EXCLUDE,
+    ))
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 DATA_DIR = Path(__file__).parent / "data"
