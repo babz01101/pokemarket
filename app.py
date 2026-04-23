@@ -1151,14 +1151,17 @@ def wishlist_multiselect(data_prefix: str, set_meta: dict, all_labels: list[str]
     with st.expander(f"⭐ Wishlist ({len(current)} from this tab)", expanded=False):
         st.caption("Pick any products to add to your Wishlist tab. "
                    "Remove a tag to un-star.")
-        picked = st.multiselect(
-            "Wishlist",
-            options=options,
-            default=current,
-            format_func=lambda l: label_to_display[l],
-            key=f"{game_key}_wishlist_picker",
-            label_visibility="collapsed",
-        )
+        # Fixed-height scrollable wrapper so large selections (and the long
+        # options dropdown) don't blow up the page height.
+        with st.container(height=260):
+            picked = st.multiselect(
+                "Wishlist",
+                options=options,
+                default=current,
+                format_func=lambda l: label_to_display[l],
+                key=f"{game_key}_wishlist_picker",
+                label_visibility="collapsed",
+            )
         picked_set = set(picked)
         current_set = set(current)
         if picked_set != current_set:
