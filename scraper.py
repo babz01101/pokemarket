@@ -484,7 +484,10 @@ def _swsh_entry(code: str, set_name: str, product: str, query_hint: str,
 
 
 _SWSH_BOOSTER_BOX_EXCLUDE = ["etb", "elite trainer", "trainer box",
-                             "bundle", "blister", "tin", "pack"]
+                             "bundle", "blister", "tin", "pack",
+                             # Counterfeit giveaways — "324/360PCS" / "pieces"
+                             # listings that are loose-card knockoff boxes.
+                             "pcs", "pieces", "proxy", "replica", "custom"]
 _SWSH_ETB_EXCLUDE          = ["bundle", "pokemon centre", "pokemon center"]
 
 # Sets known to have released with a standard 36-pack booster box.
